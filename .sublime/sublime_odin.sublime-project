@@ -1,0 +1,33 @@
+{
+	"folders":
+	[
+		{
+			"path": "..\\.",
+		},
+		{
+			"path": "C:\\dev\\Odin\\vendor\\raylib",
+		},
+		{
+			"path": "C:\\dev\\Odin\\vendor\\box2d"
+		},
+	],
+	"build_systems":
+	[
+		{
+			"name":"sublime_odin_template",
+			"cmd":"odin run src",
+			"file_regex": "^(.+)\\(([0-9]+):([0-9]+)\\) (.+)$",		
+		}
+	],
+	"settings":
+	{
+		"auto_complete":true,
+		"LSP":
+		{
+			"odin":
+			{
+				"enabled": true,
+			},
+		},
+	},
+}

@@ -1,0 +1,386 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"tocstr",
+				"unsafe_string_to_cstring(str: string) "
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "/C/dev/tora/src/main.odin",
+			"settings":
+			{
+				"buffer_size": 5171,
+				"line_ending": "Windows"
+			},
+			"undo_stack":
+			[
+			]
+		},
+		{
+			"file": "sublime_odin.sublime-project",
+			"settings":
+			{
+				"buffer_size": 411,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			},
+			"undo_stack":
+			[
+				[
+					3,
+					1,
+					"left_delete",
+					null,
+					"AQAAACMAAAAAAAAAIwAAAAAAAAABAAAALw",
+					"AQAAAAAAAAABAAAAJAAAAAAAAAAkAAAAAAAAAAAAAAAAAPC/"
+				],
+				[
+					4,
+					1,
+					"insert",
+					{
+						"characters": "\\"
+					},
+					"AQAAACMAAAAAAAAAJAAAAAAAAAAAAAAA",
+					"AQAAAAAAAAABAAAAIwAAAAAAAAAjAAAAAAAAAAAAAAAAAPC/"
+				],
+				[
+					9,
+					1,
+					"insert",
+					{
+						"characters": "\\"
+					},
+					"AQAAACQAAAAAAAAAJQAAAAAAAAAAAAAA",
+					"AQAAAAAAAAABAAAAJAAAAAAAAAAkAAAAAAAAAAAAAAAAAPC/"
+				]
+			]
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"install pa",
+				"Package Control: Install Package"
+			],
+			[
+				"lsp enable",
+				"LSP: Enable Language Server in Project"
+			],
+			[
+				"package insta",
+				"Package Control: Install Package"
+			],
+			[
+				"install pack",
+				"Package Control: Install Package"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"install package con",
+				"Install Package Control"
+			],
+			[
+				"install ",
+				"Install Package Control"
+			]
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 231.0,
+		"history":
+		[
+			"git status"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+	],
+	"file_history":
+	[
+		"/C/dev/tora/.sublime/sublime_odin.sublime-project",
+		"/C/dev/tora/.sublime/src/main.odin",
+		"/C/dev/tora/.sublime/src/animator/render.odin",
+		"/C/dev/2dora/sublime_odin.sublime-project",
+		"/C/dev/2dora/src/animator.odin",
+		"/C/dev/Odin/vendor/raylib/raylib.odin",
+		"/C/dev/dont-vax-me-bro/sublime_odin.sublime-project",
+		"/C/dev/dont-vax-me-bro/src/main.odin",
+		"/C/dev/dont-vax-me-bro/src/dvmb/app/gameovermenu.odin",
+		"/C/dev/dont-vax-me-bro/src/dvmb/app/structs.odin",
+		"/C/dev/dont-vax-me-bro/src/dvmb/app/survival.odin",
+		"/C/dev/dont-vax-me-bro/src/dvmb/app/game.odin",
+		"/C/dev/dont-vax-me-bro/src/dvmb/app/app.odin",
+		"/C/dev/dont-vax-me-bro/src/dvmb/app/pausemenu.odin",
+		"/C/dev/dont-vax-me-bro/src/dvmb/app/mainmenu.odin",
+		"/C/dev/dont-vax-me-bro/src/dvmb/app/gameplay.odin",
+		"/C/dev/dont-vax-me-bro/src/dvmb/draw/render.odin",
+		"/C/dev/dont-vax-me-bro/src/dvmb/draw/debug.odin",
+		"/C/dev/dont-vax-me-bro/src/dvmb/app/create.odin",
+		"/C/dev/dont-vax-me-bro/src/dvmb/procs/create.odin",
+		"/C/dev/dont-vax-me-bro/src/dvmb/procs/gameplay.odin",
+		"/C/dev/dont-vax-me-bro/src/dvmb/procs/helper.odin",
+		"/C/dev/dont-vax-me-bro/src/proc-gameplay.odin",
+		"/C/dev/dont-vax-me-bro/src/dvmb/dontvaxmebro.odin",
+		"/C/dev/dont-vax-me-bro/src/structs.odin",
+		"/C/dev/dont-vax-me-bro/src/enums.odin",
+		"/C/dev/dont-vax-me-bro/src/global.odin",
+		"/C/dev/dont-vax-me-bro/src/app.odin",
+		"/C/dev/sublime_odin/helloworld.odin",
+		"/C/dev/sublime_odin/sublime_odin.sublime-project"
+	],
+	"find":
+	{
+		"height": 27.0
+	},
+	"find_in_files":
+	{
+		"height": 102.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"scrollbar_highlights": true,
+		"show_context": true,
+		"use_buffer2": true,
+		"use_gitignore": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "/C/dev/tora/src/main.odin",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5171,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								223,
+								223
+							]
+						],
+						"settings":
+						{
+							"auto_complete_triggers":
+							[
+								{
+									"characters": "<",
+									"selector": "text.html, text.xml"
+								},
+								{
+									"rhs_empty": true,
+									"selector": "punctuation.accessor"
+								},
+								{
+									"characters": ".>#\"/:",
+									"selector": "meta.tag, source - comment - string.quoted.double.block - string.quoted.single.block - string.unquoted.heredoc",
+									"server": "odin"
+								}
+							],
+							"lsp_active": true,
+							"lsp_uri": "file:///C:/dev/tora/src/main.odin",
+							"show_definitions": false,
+							"syntax": "Packages/Odin/Odin.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"stack_multiselect": false,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "sublime_odin.sublime-project",
+					"selected": true,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 411,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								67,
+								67
+							]
+						],
+						"settings":
+						{
+							"lsp_uri": "file:///C:/dev/tora/.sublime/sublime_odin.sublime-project",
+							"syntax": "Packages/JSON/JSON.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"stack_multiselect": false,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 27.0
+	},
+	"input":
+	{
+		"height": 39.3333333333
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.LSP Log Panel":
+	{
+		"height": 0.0
+	},
+	"output.diagnostics":
+	{
+		"height": 0.0
+	},
+	"output.exec":
+	{
+		"height": 126.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "sublime_odin_template",
+	"project": "sublime_odin.sublime-project",
+	"replace":
+	{
+		"height": 50.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"app",
+				"dont-vax-me-bro\\src\\app.odin"
+			],
+			[
+				"global",
+				"dont-vax-me-bro\\src\\global.odin"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 265.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
