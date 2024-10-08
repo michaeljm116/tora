@@ -2,10 +2,20 @@ package animator
 
 import rl "vendor:raylib"
 
+window_size := rl.Vector2{1280, 720}
 left_window := rl.Rectangle{0, 0, 512, 512}
 right_window := rl.Rectangle{512, 0, 512, 512}
 
-panel := rl.Rectangle{right_window.x + right_window.width, 0, 100, f32(rl.GetScreenHeight())}
+top_size := f32(50)
+bot_size := f32(100)
+left_size := f32(50)
+right_size := f32(100)
+
+top_panel := rl.Rectangle{0, 0, window_size.x, top_size}
+left_panel := rl.Rectangle{0, 0, left_size, window_size.y}
+right_panel := rl.Rectangle{window_size.x - right_size,0, right_size, window_size.y}
+bottom_panel := rl.Rectangle{0, window_size.y - bot_size, window_size.x, bot_size}
+
 view_it := true
 
 sprites : [dynamic]Sprite
@@ -20,6 +30,7 @@ render :: proc(txtr: rl.Texture2D) {
 		left_window.height,
 	}
 	rl.GuiEnable()
+	
 	rl.GuiLabelButton({0, 0, 256, 256}, "HEllO")
 	rl.GuiWindowBox(left_window, "idk what to say")
 	rl.GuiWindowBox(right_window, "draawp me hurr plz")
@@ -38,8 +49,15 @@ render :: proc(txtr: rl.Texture2D) {
 		rl.DrawTexturePro(txtr, s.src, s.dst, s.origin, s.rotation, rl.WHITE)
 	}
 
-	rl.GuiTextInputBox(panel, "Name Box", "Enter Name", "buttons?", "whats tis?", 64, &view_it)
+	//rl.GuiTextInputBox(panel, "Name Box", "Enter Name", "buttons?", "whats tis?", 64, &view_it)
+	//rl.GuiPanel(left_panel, "THIS IS A TEST PANEL")
 
+	rl.DrawRectangleRec(left_panel, rl.DARKGRAY)
+	rl.DrawRectangleRec(right_panel, rl.DARKGRAY)
+	rl.DrawRectangleRec(top_panel, rl.DARKGRAY)
+	rl.DrawRectangleRec(bottom_panel, rl.WHITE)
+	//rl.GuiLine(bottom_panel, "WHAT IS A TEXT DOING HERE???")
+	
 
 }
 

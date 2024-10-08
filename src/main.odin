@@ -48,7 +48,7 @@ main :: proc()
     }
 
     //begin scene
-    rl.InitWindow(1280, 720, "2DORA")
+    rl.InitWindow(i32(anim.window_size.x), i32(anim.window_size.y), "2D Odin Raylib Animator")
     rl.SetTargetFPS(120)
 
     test_texture = rl.LoadTexture("assets/animation-test.png")
