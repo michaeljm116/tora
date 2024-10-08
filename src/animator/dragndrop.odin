@@ -3,6 +3,21 @@ package animator
 import rl "vendor:raylib"
 
 b_select_sprite := false
+pick_sprite_state := PickSpriteState.None
+offset : rl.Vector2
+sprite_rect : rl.Rectangle
+box_rect : rl.Rectangle
+rect_start: rl.Vector2
+rect_end: rl.Vector2
+
+PickSpriteState :: enum {
+	None,
+	FirstClick,
+	ClickNRelease,
+	ClickNDrag,
+	BoxDrawn,
+	DragBox
+}
 
 select_sprite :: proc(txtr: rl.Texture2D) {
 	mouse_pos := rl.GetMousePosition()

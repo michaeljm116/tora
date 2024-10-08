@@ -2,15 +2,11 @@ package animator
 
 import rl "vendor:raylib"
 
-b_draw_rect := false
-pick_sprite_state := PickSpriteState.None
-rect_start: rl.Vector2
-rect_end: rl.Vector2
 left_window := rl.Rectangle{0, 0, 512, 512}
 right_window := rl.Rectangle{512, 0, 512, 512}
-offset : rl.Vector2
-sprite_rect : rl.Rectangle
-box_rect : rl.Rectangle
+
+panel := rl.Rectangle{right_window.x + right_window.width, 0, 100, f32(rl.GetScreenHeight())}
+view_it := true
 
 sprites : [dynamic]Sprite
 
@@ -42,16 +38,9 @@ render :: proc(txtr: rl.Texture2D) {
 		rl.DrawTexturePro(txtr, s.src, s.dst, s.origin, s.rotation, rl.WHITE)
 	}
 
+	rl.GuiTextInputBox(panel, "Name Box", "Enter Name", "buttons?", "whats tis?", 64, &view_it)
 
-}
 
-PickSpriteState :: enum {
-	None,
-	FirstClick,
-	ClickNRelease,
-	ClickNDrag,
-	BoxDrawn,
-	DragBox
 }
 
 draw_dot :: proc(position: rl.Vector2) {
@@ -75,5 +64,7 @@ draw_rect_lines_w_sprite :: proc(txtr: rl.Texture2D, pos, size: rl.Vector2) -> (
 	rl.DrawRectangleLinesEx(dst, 4, rl.SKYBLUE)
 	return src, dst
 }
+
+
 
 
