@@ -69,6 +69,10 @@ change_layer_order :: proc()
     }
 }
 
+/** ------------------ TOP PANEL ------------------ **\
+** OBV things like file save options etc is going here
+** But also many of the edit functions will go here too
+\** ------------------ TOP PANEL ------------------ **/
 draw_top_panel :: proc()
 {
 	rl.DrawRectangleRec(top_panel, rl.DARKGRAY)
@@ -80,26 +84,33 @@ dropdown_rect := rl.Rectangle{0,0, 128, top_size}
 play_rect  := rl.Rectangle{dropdown_rect.width,0, 32, top_size}
 pause_rect := rl.Rectangle{play_rect.x  + play_rect.width,  0, 32, top_size}
 stop_rect  := rl.Rectangle{pause_rect.x + pause_rect.width, 0, 32, top_size}
+drag_rect  := rl.Rectangle{stop_rect.x + stop_rect.width, 0, 32, top_size}
 
 b_play := false
 b_pause := false
 b_stop := false
+b_drag := false
 
 draw_file_menu :: proc()
 {
     rl.GuiSetIconScale(1)
     rl.GuiDropdownBox(dropdown_rect,"File", &fileselection, false)
+    if(draw_icon_button(rl.GuiIconName.ICON_TARGET, i32(drag_rect.x), i32(drag_rect.y), 2, rl.PURPLE, rl.GRAY, &b_drag) > 0){
+        pick_sprite_state = .None
+    }
     draw_icon_button(rl.GuiIconName.ICON_PLAYER_PLAY, i32(play_rect.x), i32(play_rect.y), 2, rl.GREEN, rl.GRAY, &b_play)
     draw_icon_button(rl.GuiIconName.ICON_PLAYER_PAUSE, i32(pause_rect.x), i32(pause_rect.y), 2, rl.YELLOW, rl.GRAY, &b_pause)
     draw_icon_button(rl.GuiIconName.ICON_PLAYER_STOP, i32(stop_rect.x), i32(stop_rect.y), 2, rl.RED, rl.GRAY, &b_stop)
-}
+    
+   }
 
-draw_icon_button :: proc(icon_id : rl.GuiIconName, x, y, pixel_size : i32, active_color, inactive_color : rl.Color, active : ^bool)
+draw_icon_button :: proc(icon_id : rl.GuiIconName, x, y, pixel_size : i32, active_color, inactive_color : rl.Color, active : ^bool) -> i32
 {
    rect := rl.Rectangle{f32(x),f32(y),f32(16 * pixel_size), f32(16 * pixel_size)}
-   rl.GuiToggle(rect,"",active)
+   ret := rl.GuiToggle(rect,"",active)
    color := active^ ? active_color : inactive_color
    rl.GuiDrawIcon(icon_id, x, y, pixel_size, color)
+   return ret
 }
 
 /// Swap Up, This proc takes a sprite array and its index and does a swap with the previous element
@@ -110,7 +121,6 @@ swap_up :: proc(sprite_array : [dynamic]Sprite, curr_sprite : ^int)
         sprite_array[index], sprite_array[index - 1] = sprite_array[index - 1], sprite_array[index]
         curr_sprite^ = index - 1
     }
-
 }
 
 /// Swap Down, This proc takes a sprite array and its index and does a swap with the next element
@@ -121,5 +131,11 @@ swap_down :: proc(sprite_array : [dynamic]Sprite, curr_sprite : ^int)
         sprite_array[index], sprite_array[index + 1] = sprite_array[index + 1], sprite_array[index]
         curr_sprite^ = index + 1
     }
-
 }
+
+/// Sprite Mouse Detection, if the mouse is over the sprite and the sprite is selected
+/// set that sprite as selected
+sprite_mouse_detection :: proc(sprite_array : [dynamic]Sprite, curr_sprite : ^int)
+{
+}
+

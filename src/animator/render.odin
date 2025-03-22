@@ -27,27 +27,21 @@ render :: proc(txtr: rl.Texture2D) {
 		rl.DrawTexturePro(txtr, txtr_rec_src, txtr_rec_dst, {0, 0}, 0, rl.WHITE)
 		//rl.DrawRectangleGradientV(400, 50, 256, 256, rl.BLACK, rl.WHITE)
 		rl.GuiLabel(square, "yoyoyo")
-		if (rl.GuiButton(
-				   square,
-				   "draw rect",
-			   )) {b_select_sprite = !b_select_sprite;pick_sprite_state = .None}
+		/*if (rl.GuiButton(square, "draw rect")) {
+            b_select_sprite = !b_select_sprite
+    		pick_sprite_state = .None
+		}
 		if (b_select_sprite) {
 			select_sprite(txtr)
-		}
+		}*/
 
+		if(b_drag) do select_sprite(txtr)
 	}
 	for s in sprites {
 		rl.DrawTexturePro(txtr, s.src, s.dst, s.origin, s.rotation, rl.WHITE)
 	}
-
-	//rl.GuiTextInputBox(panel, "Name Box", "Enter Name", "buttons?", "whats tis?", 64, &view_it)
-	//rl.GuiPanel(left_panel, "THIS IS A TEST PANEL")
-
-	//rl.DrawRectangleRec(left_panel, rl.DARKGRAY)
 	rl.DrawRectangleRec(right_panel, rl.DARKGRAY)
-	//rl.DrawRectangleRec(top_panel, rl.DARKGRAY)
 	rl.DrawRectangleRec(bottom_panel, rl.WHITE)
-	//rl.GuiLine(bottom_panel, "WHAT IS A TEXT DOING HERE???")
 	update_editor_gui()
 	draw_editor_gui()
 }
@@ -63,13 +57,8 @@ draw_rect_lines :: proc(first, second: rl.Vector2) {
 	rect := rl.Rectangle{first.x, first.y, second.x - first.x, second.y - first.y}
 	rl.DrawRectangleLinesEx(rect, 4, rl.SKYBLUE)
 }
-draw_rect_lines_w_sprite :: proc(
-	txtr: rl.Texture2D,
-	pos, size: rl.Vector2,
-) -> (
-	rl.Rectangle,
-	rl.Rectangle,
-) {
+draw_rect_lines_w_sprite :: proc(txtr: rl.Texture2D, pos, size: rl.Vector2) -> (rl.Rectangle,rl.Rectangle) 
+{
 	ratio := rl.Vector2 {
 		f32(txtr.width) / left_window.width,
 		f32(txtr.height) / left_window.height,
