@@ -1,6 +1,8 @@
 package animator
 
 import rl "vendor:raylib"
+import "core:fmt"
+import "core:strings"
 
 b_select_sprite := false
 pick_sprite_state := PickSpriteState.None
@@ -21,7 +23,7 @@ PickSpriteState :: enum {
 
 select_sprite :: proc(txtr: rl.Texture2D) {
 	mouse_pos := rl.GetMousePosition()
-	switch (pick_sprite_state) 
+	switch (pick_sprite_state)
 	{
 	case .None:
 		if(rl.IsMouseButtonPressed(.LEFT) && is_in_window(mouse_pos, left_window)){
@@ -81,6 +83,7 @@ select_sprite :: proc(txtr: rl.Texture2D) {
 		if(rl.IsMouseButtonPressed(.LEFT)){
 			if(is_in_window(mouse_pos - offset, right_window)){
 				sprite := Sprite{src = src, dst = dst}
+				sprite.name = fmt.tprintf("New Sprite(%i)", len(sprites))
 				append(&sprites, sprite)
 				pick_sprite_state = .None
 			}
@@ -89,7 +92,6 @@ select_sprite :: proc(txtr: rl.Texture2D) {
 			}
 		}
 	}
-
 }
 
 is_in_window :: proc(mouse_pos: rl.Vector2, window: rl.Rectangle) -> bool {

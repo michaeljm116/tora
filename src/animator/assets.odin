@@ -10,6 +10,6 @@ Sprite :: struct
     origin : rl.Vector2,
     rotation : f32,
     color : rl.Color,
-    layer : u8,
-
+    layer : u8
 }
+sprites: [dynamic]Sprite

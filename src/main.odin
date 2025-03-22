@@ -20,7 +20,7 @@ main :: proc()
     }
     defer delete(data)
 
-    // pasre the json
+    // parse the json
     json_data, err := json.parse(data)
     if err != .None{
         fmt.eprintln("Failed to parse the json file.")
