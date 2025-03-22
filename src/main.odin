@@ -62,7 +62,7 @@ main :: proc()
 
         //animate(&test_sprite, test_pose)
         //draw_sprite(test_sprite)
-
+        anim.init_default_gui()
         anim.render(test_texture)
 
         rl.EndDrawing()

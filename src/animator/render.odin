@@ -3,8 +3,8 @@ package animator
 import rl "vendor:raylib"
 
 window_size := rl.Vector2{1280, 720}
-left_window := rl.Rectangle{0, 0, 512, 512}
-right_window := rl.Rectangle{512, 0, 512, 512}
+left_window := rl.Rectangle{left_panel.x + left_panel.width, top_panel.y + top_panel.height, (window_size.x - left_panel.width - right_panel.width) / 2, (window_size.y - top_panel.height - bottom_panel.height)}
+right_window := rl.Rectangle{left_window.x + left_window.width, left_window.y, left_window.width, left_window.height}
 
 view_it := true
 
@@ -19,29 +19,18 @@ render :: proc(txtr: rl.Texture2D) {
 		left_window.height,
 	}
 	rl.GuiEnable()
-
-	rl.GuiLabelButton({256, 256, 256, 256}, "HEllO")
-	rl.GuiWindowBox(left_window, "idk what to say")
-	rl.GuiWindowBox(right_window, "draawp me hurr plz")
+	
+	rl.GuiWindowBox(left_window, "Source Texture")
+	rl.GuiWindowBox(right_window, "Model View")
 	{
 		rl.DrawTexturePro(txtr, txtr_rec_src, txtr_rec_dst, {0, 0}, 0, rl.WHITE)
-		//rl.DrawRectangleGradientV(400, 50, 256, 256, rl.BLACK, rl.WHITE)
-		rl.GuiLabel(square, "yoyoyo")
-		/*if (rl.GuiButton(square, "draw rect")) {
-            b_select_sprite = !b_select_sprite
-    		pick_sprite_state = .None
-		}
-		if (b_select_sprite) {
-			select_sprite(txtr)
-		}*/
-
 		if(b_drag) do select_sprite(txtr)
 	}
 	for s in sprites {
 		rl.DrawTexturePro(txtr, s.src, s.dst, s.origin, s.rotation, rl.WHITE)
 	}
 	rl.DrawRectangleRec(right_panel, rl.DARKGRAY)
-	rl.DrawRectangleRec(bottom_panel, rl.WHITE)
+	rl.DrawRectangleRec(bottom_panel, rl.DARKGRAY)
 	update_editor_gui()
 	draw_editor_gui()
 }
@@ -64,8 +53,8 @@ draw_rect_lines_w_sprite :: proc(txtr: rl.Texture2D, pos, size: rl.Vector2) -> (
 		f32(txtr.height) / left_window.height,
 	} //very unoptimal
 	src := rl.Rectangle {
-		rect_start.x * ratio.x,
-		rect_start.y * ratio.y,
+		(rect_start.x - left_window.x) * ratio.x,
+		(rect_start.y - left_window.y) * ratio.y,
 		size.x * ratio.x,
 		size.y * ratio.y,
 	}

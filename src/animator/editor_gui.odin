@@ -7,7 +7,7 @@ import str "core:strings"
 top_size := f32(32)
 bot_size := f32(100)
 left_size := f32(196)
-right_size := f32(100)
+right_size := f32(16)
 
 top_panel := rl.Rectangle{0, 0, window_size.x, top_size}
 left_panel := rl.Rectangle{0, 0, left_size, window_size.y}
@@ -30,31 +30,24 @@ draw_editor_gui :: proc()
 ** Clicking on one  will display its properties
 ** And allow you to edit them as well as its layer order
 \** ------------------ LEFT PANEL ------------------ **/
-TEXT_SIZE :: i32(rl.GuiDefaultProperty.TEXT_SIZE)
-TEXT_COLOR :: i32(rl.GuiControlProperty.TEXT_COLOR_NORMAL)
-I32COLOR_WHITE := transmute(i32)u32(0xFFFFFFFF)
-I32COLOR_RED := transmute(i32)u32(0xFF0000FF)
-
+lp_padding : f32 = 4
+lp_spacing : f32 = 24
+lp_template := rl.Rectangle{left_panel.x + lp_padding, top_size, left_size - lp_padding * 2, lp_spacing}
 curr_sprite := 0
+
 draw_left_panel :: proc()
 {
 	rl.DrawRectangleRec(left_panel, rl.GRAY)
-	prev_y := top_size
-	spacing := f32(24)
-	padding : f32 = 4
-	fs := rl.GuiGetStyle(.DEFAULT, TEXT_SIZE)
-	fc := rl.GuiGetStyle(.DEFAULT, TEXT_COLOR)
-	rl.GuiSetStyle(.DEFAULT, TEXT_SIZE, i32(spacing))
-	rl.GuiSetStyle(.DEFAULT, TEXT_COLOR, I32COLOR_WHITE)
+	temp_rec := lp_template
+	set_size_and_color(i32(lp_spacing), I32COLOR_WHITE)
 	for s, i in sprites
 	{
-        if rl.GuiLabelButton(rl.Rectangle{left_panel.x + padding, prev_y + spacing, left_size - padding * 2, spacing}, str.clone_to_cstring(s.name)){
+        if rl.GuiLabelButton(temp_rec, str.clone_to_cstring(s.name)){
             curr_sprite = i
         }
-    	prev_y += spacing
+    	temp_rec.y += lp_spacing
 	}
-	rl.GuiSetStyle(.DEFAULT, TEXT_COLOR, fc)
-	rl.GuiSetStyle(.DEFAULT, TEXT_SIZE, fs)
+	set_default_gui()
 }
 
 // change layer order,
@@ -101,8 +94,7 @@ draw_file_menu :: proc()
     draw_icon_button(rl.GuiIconName.ICON_PLAYER_PLAY, i32(play_rect.x), i32(play_rect.y), 2, rl.GREEN, rl.GRAY, &b_play)
     draw_icon_button(rl.GuiIconName.ICON_PLAYER_PAUSE, i32(pause_rect.x), i32(pause_rect.y), 2, rl.YELLOW, rl.GRAY, &b_pause)
     draw_icon_button(rl.GuiIconName.ICON_PLAYER_STOP, i32(stop_rect.x), i32(stop_rect.y), 2, rl.RED, rl.GRAY, &b_stop)
-    
-   }
+}
 
 draw_icon_button :: proc(icon_id : rl.GuiIconName, x, y, pixel_size : i32, active_color, inactive_color : rl.Color, active : ^bool) -> i32
 {
@@ -138,4 +130,8 @@ swap_down :: proc(sprite_array : [dynamic]Sprite, curr_sprite : ^int)
 sprite_mouse_detection :: proc(sprite_array : [dynamic]Sprite, curr_sprite : ^int)
 {
 }
-
+//(bounds: Rectangle, title: cstring, message: cstring, buttons: cstring, text: cstring, textMaxSize: c.int, secretViewActive: ^bool) -> c.int --- // Text Input Box control, ask for text, supports secret
+name_the_sprite :: proc(index : i32)
+{
+    //rl.GuiTextInputBox()
+}
