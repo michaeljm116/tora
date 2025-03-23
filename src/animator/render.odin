@@ -19,7 +19,7 @@ render :: proc(txtr: rl.Texture2D) {
 		left_window.height,
 	}
 	rl.GuiEnable()
-	
+
 	rl.GuiWindowBox(left_window, "Source Texture")
 	rl.GuiWindowBox(right_window, "Model View")
 	{
@@ -28,6 +28,9 @@ render :: proc(txtr: rl.Texture2D) {
 	}
 	for s in sprites {
 		rl.DrawTexturePro(txtr, s.src, s.dst, s.origin, s.rotation, rl.WHITE)
+		if(b_show_sprite_rect){
+		  rl.DrawRectangleLinesEx(s.dst, 4, rl.BLACK)
+		}
 	}
 	rl.DrawRectangleRec(right_panel, rl.DARKGRAY)
 	rl.DrawRectangleRec(bottom_panel, rl.DARKGRAY)
@@ -46,7 +49,7 @@ draw_rect_lines :: proc(first, second: rl.Vector2) {
 	rect := rl.Rectangle{first.x, first.y, second.x - first.x, second.y - first.y}
 	rl.DrawRectangleLinesEx(rect, 4, rl.SKYBLUE)
 }
-draw_rect_lines_w_sprite :: proc(txtr: rl.Texture2D, pos, size: rl.Vector2) -> (rl.Rectangle,rl.Rectangle) 
+draw_rect_lines_w_sprite :: proc(txtr: rl.Texture2D, pos, size: rl.Vector2) -> (rl.Rectangle,rl.Rectangle)
 {
 	ratio := rl.Vector2 {
 		f32(txtr.width) / left_window.width,

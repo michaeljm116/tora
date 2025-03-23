@@ -83,6 +83,7 @@ select_sprite :: proc(txtr: rl.Texture2D) {
 		if(rl.IsMouseButtonPressed(.LEFT)){
 			if(is_in_window(mouse_pos - offset, right_window)){
 				sprite := Sprite{src = src, dst = dst}
+				//optimize_sprite(&sprite, txtr)
 				sprite.name = fmt.tprintf("New Sprite(%i)", len(sprites))
 				append(&sprites, sprite)
 				pick_sprite_state = .None
@@ -124,3 +125,61 @@ window_clamp_opt :: proc(mouse_pos: rl.Vector2, window: rl.Rectangle) -> rl.Vect
 	else {ret.y = window.y + window.height}
 	return ret
 }
+
+optimize_sprite :: proc(sprite: ^Sprite, texture: rl.Texture2D) {
+    // Load texture image data
+    img := rl.LoadImageFromTexture(texture)
+    pixels := rl.LoadImageColors(img)
+
+    // Ensure valid pixels were loaded
+    if pixels == nil {
+        rl.UnloadImage(img)
+        return
+    }
+
+    src := sprite.src
+    tex_width := int(img.width)
+    tex_height := int(img.height)
+
+    // Bounds for the new cropped area
+    min_x, min_y : int = int(src.x + src.width), int(src.y + src.height)
+    max_x, max_y : int = int(src.x), int(src.y)
+
+    // Scan for non-transparent pixels
+    for y := int(src.y); y < int(src.y + src.height); y += 1 {
+        for x := int(src.x); x < int(src.x + src.width); x += 1 {
+            index := y * tex_width + x
+            color := pixels[index]
+
+            if color.a > 0 { // If pixel is not fully transparent
+                if x < min_x { min_x = x; }
+                if x > max_x { max_x = x; }
+                if y < min_y { min_y = y; }
+                if y > max_y { max_y = y; }
+            }
+        }
+    }
+
+    // If nothing was found, keep original size
+    if max_x <= min_x || max_y <= min_y {
+        rl.UnloadImageColors(pixels)
+        rl.UnloadImage(img)
+        return
+    }
+
+    // Calculate new size
+    new_width := max_x - min_x + 1
+    new_height := max_y - min_y + 1
+
+    // Update sprite source rectangle
+    sprite.src = rl.Rectangle{ x = cast(f32)min_x, y = cast(f32)min_y, width = cast(f32)new_width, height = cast(f32)new_height }
+
+    // Adjust origin proportionally
+    sprite.origin.x -= (cast(f32)min_x - src.x)
+    sprite.origin.y -= (cast(f32)min_y - src.y)
+
+    // Cleanup
+    rl.UnloadImageColors(pixels)
+    rl.UnloadImage(img)
+}
+
