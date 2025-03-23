@@ -78,8 +78,14 @@ play_rect  := rl.Rectangle{dropdown_rect.width,0, 32, top_size}
 pause_rect := rl.Rectangle{play_rect.x  + play_rect.width,  0, 32, top_size}
 stop_rect  := rl.Rectangle{pause_rect.x + pause_rect.width, 0, 32, top_size}
 drag_rect  := rl.Rectangle{stop_rect.x + stop_rect.width, 0, 32, top_size}
+pos_rect   := rl.Rectangle{drag_rect.x + drag_rect.width, 0, 32, top_size}
+rot_rect   := rl.Rectangle{pos_rect.x + pos_rect.width, 0, 32, top_size}
+scale_rect := rl.Rectangle{rot_rect.x + rot_rect.width, 0, 32, top_size}
 
 b_play := false
+b_pos := false
+b_rot := false
+b_scale := false
 b_pause := false
 b_stop := false
 b_drag := false
@@ -88,12 +94,48 @@ draw_file_menu :: proc()
 {
     rl.GuiSetIconScale(1)
     rl.GuiDropdownBox(dropdown_rect,"File", &fileselection, false)
-    if(draw_icon_button(rl.GuiIconName.ICON_TARGET, i32(drag_rect.x), i32(drag_rect.y), 2, rl.PURPLE, rl.GRAY, &b_drag) > 0){
-        pick_sprite_state = .None
-    }
     draw_icon_button(rl.GuiIconName.ICON_PLAYER_PLAY, i32(play_rect.x), i32(play_rect.y), 2, rl.GREEN, rl.GRAY, &b_play)
     draw_icon_button(rl.GuiIconName.ICON_PLAYER_PAUSE, i32(pause_rect.x), i32(pause_rect.y), 2, rl.YELLOW, rl.GRAY, &b_pause)
     draw_icon_button(rl.GuiIconName.ICON_PLAYER_STOP, i32(stop_rect.x), i32(stop_rect.y), 2, rl.RED, rl.GRAY, &b_stop)
+    if(draw_icon_button(rl.GuiIconName.ICON_TARGET, i32(drag_rect.x), i32(drag_rect.y), 2, rl.PURPLE, rl.GRAY, &b_drag) > 0){
+        pick_sprite_state = .None
+    }
+    handle_transforms()
+}
+
+handle_transforms :: proc()
+{
+    if(draw_icon_button(rl.GuiIconName.ICON_TARGET_MOVE, i32(pos_rect.x), i32(pos_rect.y), 2, rl.BLUE, rl.GRAY, &b_pos) > 0){
+        b_rot, b_scale = false, false
+    }
+    else if(draw_icon_button(rl.GuiIconName.ICON_ROTATE, i32(rot_rect.x), i32(rot_rect.y), 2, rl.BLUE, rl.GRAY, &b_rot) > 0){
+        b_pos, b_scale = false, false
+    }
+    else if(draw_icon_button(rl.GuiIconName.ICON_SCALE, i32(scale_rect.x), i32(scale_rect.y), 2, rl.BLUE, rl.GRAY, &b_scale) > 0){
+        b_pos, b_rot = false, false
+    }
+    if(len(sprites) > 0)
+    {
+        sprite := &sprites[curr_sprite]
+        if(b_pos)
+        {
+            if(rl.IsKeyDown(.W)){sprite.dst.y -= 1}
+            if(rl.IsKeyDown(.S)){sprite.dst.y += 1}
+            if(rl.IsKeyDown(.A)){sprite.dst.x -= 1}
+            if(rl.IsKeyDown(.D)){sprite.dst.x += 1}
+        }
+        if(b_rot){
+            if(rl.IsKeyDown(.A)){sprite.rotation -= 1}
+            if(rl.IsKeyDown(.D)){sprite.rotation += 1}
+        }
+        if(b_scale)
+        {
+            if(rl.IsKeyDown(.W)){sprite.dst.height += 1}
+            if(rl.IsKeyDown(.S)){sprite.dst.height -= 1}
+            if(rl.IsKeyDown(.A)){sprite.dst.width -= 1}
+            if(rl.IsKeyDown(.D)){sprite.dst.width += 1}
+        }
+    }
 }
 
 draw_icon_button :: proc(icon_id : rl.GuiIconName, x, y, pixel_size : i32, active_color, inactive_color : rl.Color, active : ^bool) -> i32
