@@ -46,6 +46,7 @@ draw_left_panel :: proc()
             curr_sprite = i
         }
     	temp_rec.y += lp_spacing
+        name_the_sprite(i)
 	}
 	set_default_gui()
 }
@@ -200,7 +201,27 @@ sprite_mouse_detection :: proc(sprite_array : [dynamic]Sprite, curr_sprite : ^in
 {
 }
 //(bounds: Rectangle, title: cstring, message: cstring, buttons: cstring, text: cstring, textMaxSize: c.int, secretViewActive: ^bool) -> c.int --- // Text Input Box control, ask for text, supports secret
-name_the_sprite :: proc(index : i32)
-{
-    //rl.GuiTextInputBox()
+name_the_sprite :: proc(index: int) {
+    sprite := &sprites[index];
+    name_buf := str.clone_to_cstring(sprite.name)
+    
+    input_rect := rl.Rectangle{
+        x = window_size.x/2 - 150,
+        y = window_size.y/2 - 20,
+        width = 300,
+        height = 40,
+    };
+    
+    secret: bool = false;
+    result := rl.GuiTextInputBox(input_rect,
+                                  "Name Sprite",               // title
+                                  "Enter new sprite name:",    // message
+                                  "Save",                      // button text
+                                  name_buf,                // pointer to the buffer
+                                  128,                         // maximum text length
+                                  &secret);
+
+    if result != 0 {
+        sprite.name = str.clone_from_cstring(name_buf) 
+    }
 }
