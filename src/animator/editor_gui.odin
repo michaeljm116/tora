@@ -32,7 +32,7 @@ draw_editor_gui :: proc()
 \** ------------------ LEFT PANEL ------------------ **/
 lp_padding : f32 = 4
 lp_spacing : f32 = 24
-lp_template := rl.Rectangle{left_panel.x + lp_padding, top_size, left_size - lp_padding * 2, lp_spacing}
+lp_template := rl.Rectangle{left_panel.x + lp_padding, top_size + lp_padding, left_size - lp_padding * 2, lp_spacing}
 curr_sprite := 0
 
 draw_left_panel :: proc()
@@ -46,9 +46,9 @@ draw_left_panel :: proc()
             curr_sprite = i
         }
     	temp_rec.y += lp_spacing
-        name_the_sprite(i)
 	}
 	set_default_gui()
+	if(len(sprites) > 0) do	name_the_sprite(curr_sprite)
 }
 
 // change layer order,
@@ -202,26 +202,26 @@ sprite_mouse_detection :: proc(sprite_array : [dynamic]Sprite, curr_sprite : ^in
 }
 //(bounds: Rectangle, title: cstring, message: cstring, buttons: cstring, text: cstring, textMaxSize: c.int, secretViewActive: ^bool) -> c.int --- // Text Input Box control, ask for text, supports secret
 name_the_sprite :: proc(index: int) {
-    sprite := &sprites[index];
+    sprite := &sprites[index]
     name_buf := str.clone_to_cstring(sprite.name)
-    
+
     input_rect := rl.Rectangle{
-        x = window_size.x/2 - 150,
-        y = window_size.y/2 - 20,
-        width = 300,
-        height = 40,
+        x = left_panel.x,
+        y = window_size.y - 120,
+        width = left_panel.width,
+        height = 120,
     };
-    
-    secret: bool = false;
+    secret := false
     result := rl.GuiTextInputBox(input_rect,
-                                  "Name Sprite",               // title
-                                  "Enter new sprite name:",    // message
-                                  "Save",                      // button text
-                                  name_buf,                // pointer to the buffer
-                                  128,                         // maximum text length
-                                  &secret);
+        "Name Sprite",               // title
+        "Enter new sprite name:",    // message
+        "Save",                      // button text
+        name_buf,                    // pointer to the buffer
+        128,                         // maximum text length
+        &secret
+    )
 
     if result != 0 {
-        sprite.name = str.clone_from_cstring(name_buf) 
+        sprite.name = str.clone_from_cstring(name_buf)
     }
 }
