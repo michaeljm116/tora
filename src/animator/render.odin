@@ -19,9 +19,8 @@ render :: proc(txtr: rl.Texture2D) {
 		left_window.height,
 	}
 	rl.GuiEnable()
-
-	rl.GuiWindowBox(left_window, "Source Texture")
-	rl.GuiWindowBox(right_window, "Model View")
+	rl.GuiPanel(left_window, "Source Texture")
+	rl.GuiPanel(right_window, "Model View")
 	{
 		rl.DrawTexturePro(txtr, txtr_rec_src, txtr_rec_dst, {0, 0}, 0, rl.WHITE)
 		if(b_drag) do select_sprite(txtr)

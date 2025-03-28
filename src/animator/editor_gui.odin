@@ -63,10 +63,39 @@ change_layer_order :: proc()
     }
 }
 
+editing_name := true
+name_the_sprite :: proc(index: int)
+{
+    sprite := &sprites[index]
+    name_buf := str.clone_to_cstring(sprite.name)
+
+    input_rect := rl.Rectangle{
+        x = left_panel.x,
+        y = window_size.y - 32,
+        width = left_panel.width,
+        height = 32,
+    };
+    secret := false
+    result := rl.GuiTextBox(input_rect, name_buf, 128, editing_name)
+    /* rl.GuiTextInputBox(input_rect,
+        "Name Sprite",               // title
+        "Enter new sprite name:",    // message
+        "Save",                      // button text
+        name_buf,                    // pointer to the buffer
+        128,                         // maximum text length
+        &secret
+    )*/
+
+    if result != true{
+        sprite.name = str.clone_from_cstring(name_buf)
+    }
+}
+
 /** ------------------ TOP PANEL ------------------ **\
 ** OBV things like file save options etc is going here
 ** But also many of the edit functions will go here too
 \** ------------------ TOP PANEL ------------------ **/
+
 draw_top_panel :: proc()
 {
 	rl.DrawRectangleRec(top_panel, rl.DARKGRAY)
@@ -200,28 +229,4 @@ swap_down :: proc(sprite_array : [dynamic]Sprite, curr_sprite : ^int)
 sprite_mouse_detection :: proc(sprite_array : [dynamic]Sprite, curr_sprite : ^int)
 {
 }
-//(bounds: Rectangle, title: cstring, message: cstring, buttons: cstring, text: cstring, textMaxSize: c.int, secretViewActive: ^bool) -> c.int --- // Text Input Box control, ask for text, supports secret
-name_the_sprite :: proc(index: int) {
-    sprite := &sprites[index]
-    name_buf := str.clone_to_cstring(sprite.name)
 
-    input_rect := rl.Rectangle{
-        x = left_panel.x,
-        y = window_size.y - 120,
-        width = left_panel.width,
-        height = 120,
-    };
-    secret := false
-    result := rl.GuiTextInputBox(input_rect,
-        "Name Sprite",               // title
-        "Enter new sprite name:",    // message
-        "Save",                      // button text
-        name_buf,                    // pointer to the buffer
-        128,                         // maximum text length
-        &secret
-    )
-
-    if result != 0 {
-        sprite.name = str.clone_from_cstring(name_buf)
-    }
-}

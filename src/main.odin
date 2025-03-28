@@ -48,6 +48,7 @@ main :: proc()
     }
 
     //begin scene
+    //rl.SetConfigFlags({rl.ConfigFlag.WINDOW_UNDECORATED})
     rl.InitWindow(i32(anim.window_size.x), i32(anim.window_size.y), "2D Odin Raylib Animator")
     rl.SetTargetFPS(120)
 
