@@ -4,12 +4,12 @@ import rl "vendor:raylib"
 import str "core:strings"
 
 // Global Constants
-top_size := f32(32)
+top_size := rl.Vector2{32, 32}
 bot_size := f32(100)
 left_size := f32(196)
 right_size := f32(16)
 
-top_panel := rl.Rectangle{0, 0, window_size.x, top_size}
+top_panel := rl.Rectangle{0, 0, window_size.x, top_size.y}
 left_panel := rl.Rectangle{0, 0, left_size, window_size.y}
 right_panel := rl.Rectangle{window_size.x - right_size, 0, right_size, window_size.y}
 bottom_panel := rl.Rectangle{0, window_size.y - bot_size, window_size.x, bot_size}
@@ -32,7 +32,7 @@ draw_editor_gui :: proc()
 \** ------------------ LEFT PANEL ------------------ **/
 lp_padding : f32 = 4
 lp_spacing : f32 = 24
-lp_template := rl.Rectangle{left_panel.x + lp_padding, top_size + lp_padding, left_size - lp_padding * 2, lp_spacing}
+lp_template := rl.Rectangle{left_panel.x + lp_padding, top_size.y + lp_padding, left_size - lp_padding * 2, lp_spacing}
 curr_sprite := 0
 
 draw_left_panel :: proc()
@@ -102,17 +102,42 @@ draw_top_panel :: proc()
 	draw_file_menu()
 }
 
-fileselection := i32(0)
-dropdown_rect := rl.Rectangle{0,0, 128, top_size}
-play_rect  := rl.Rectangle{dropdown_rect.width,0, 32, top_size}
-pause_rect := rl.Rectangle{play_rect.x  + play_rect.width,  0, 32, top_size}
-stop_rect  := rl.Rectangle{pause_rect.x + pause_rect.width, 0, 32, top_size}
-drag_rect  := rl.Rectangle{stop_rect.x + stop_rect.width, 0, 32, top_size}
-pos_rect   := rl.Rectangle{drag_rect.x + drag_rect.width, 0, 32, top_size}
-rot_rect   := rl.Rectangle{pos_rect.x + pos_rect.width, 0, 32, top_size}
-scale_rect := rl.Rectangle{rot_rect.x + rot_rect.width, 0, 32, top_size}
-show_sprite_rect := rl.Rectangle{scale_rect.x + scale_rect.width, 0, 32, top_size}
+TopMenuIcon :: struct{
+    rect : rl.Rectangle,
+    active : bool,
+    color : rl.Color,
+    icon : rl.GuiIconName
+}
 
+place_icon_next_to :: proc(icon : ^TopMenuIcon, prev_rect : rl.Rectangle, is_right := true ){
+    icon.rect = { prev_rect.x + prev_rect.width, prev_rect.y, prev_rect.width, prev_rect.height}
+}
+
+save_rect := rl.Rectangle{0,0,top_size.x, top_size.y}
+load_rect := rl.Rectangle{save_rect.x + save_rect.width, 0, top_size.x, top_size.y}
+play_rect  := rl.Rectangle{dropdown_rect.width,0, top_size.x, top_size.y}
+pause_rect := rl.Rectangle{play_rect.x  + play_rect.width,  0, top_size.x, top_size.y}
+stop_rect  := rl.Rectangle{pause_rect.x + pause_rect.width, 0, top_size.x, top_size.y}
+drag_rect  := rl.Rectangle{stop_rect.x + stop_rect.width, 0, top_size.x, top_size.y}
+pos_rect   := rl.Rectangle{drag_rect.x + drag_rect.width, 0, top_size.x, top_size.y}
+rot_rect   := rl.Rectangle{pos_rect.x + pos_rect.width, 0, top_size.x, top_size.y}
+scale_rect := rl.Rectangle{rot_rect.x + rot_rect.width, 0, top_size.x, top_size.y}
+show_sprite_rect := rl.Rectangle{scale_rect.x + scale_rect.width, 0, top_size.x, top_size.y}
+
+save_icon := TopMenuIcon{rect = save_rect, active = false,color = rl.BLACK,icon = .ICON_FILE_SAVE}
+load_icon := TopMenuIcon{rect = load_rect, active = false,color = rl.BLACK,icon = .ICON_FILE_OPEN}
+play_icon := TopMenuIcon{rect = play_rect, active = false,color = rl.GREEN,icon = .ICON_PLAYER_PLAY}
+pause_icon := TopMenuIcon{rect = pause_rect, active = false,color = rl.YELLOW,icon = .ICON_PLAYER_PAUSE}
+stop_icon := TopMenuIcon{rect = stop_rect, active = false,color = rl.RED,icon = .ICON_PLAYER_STOP}
+drag_icon := TopMenuIcon{rect = drag_rect, active = false,color = rl.PURPLE,icon = .ICON_TARGET}
+pos_icon := TopMenuIcon{rect = pos_rect, active = false,color = rl.BLUE,icon = .ICON_TARGET_MOVE}
+rot_icon := TopMenuIcon{rect = rot_rect, active = false,color = rl.BLUE,icon = .ICON_ROTATE}
+scale_icon := TopMenuIcon{rect = scale_rect, active = false,color = rl.BLUE,icon = .ICON_SCALE}
+show_sprite_icon := TopMenuIcon{rect = show_sprite_rect, active = false,color = rl.BLACK,icon = .ICON_SCALE}
+
+fileselection := i32(0)
+dropdown_rect := rl.Rectangle{0,0, 128, top_size.y}
+b_save := false
 b_play := false
 b_pos := false
 b_rot := false
