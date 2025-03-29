@@ -23,11 +23,11 @@ render :: proc(txtr: rl.Texture2D) {
 	rl.GuiPanel(right_window, "Model View")
 	{
 		rl.DrawTexturePro(txtr, txtr_rec_src, txtr_rec_dst, {0, 0}, 0, rl.WHITE)
-		if(b_drag) do select_sprite(txtr)
+		if(drag_icon.active) do select_sprite(txtr)
 	}
 	for s in sprites {
 		rl.DrawTexturePro(txtr, s.src, s.dst, s.origin, s.rotation, rl.WHITE)
-		if(b_show_sprite_rect){
+		if(drag_icon.active){
 		  rl.DrawRectangleLinesEx(s.dst, 4, rl.BLACK)
 		}
 	}

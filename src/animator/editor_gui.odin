@@ -133,7 +133,7 @@ drag_icon := TopMenuIcon{rect = drag_rect, active = false,color = rl.PURPLE,icon
 pos_icon := TopMenuIcon{rect = pos_rect, active = false,color = rl.BLUE,icon = .ICON_TARGET_MOVE}
 rot_icon := TopMenuIcon{rect = rot_rect, active = false,color = rl.BLUE,icon = .ICON_ROTATE}
 scale_icon := TopMenuIcon{rect = scale_rect, active = false,color = rl.BLUE,icon = .ICON_SCALE}
-show_sprite_icon := TopMenuIcon{rect = show_sprite_rect, active = false,color = rl.BLACK,icon = .ICON_SCALE}
+show_sprite_icon := TopMenuIcon{rect = show_sprite_rect, active = false,color = rl.BLACK,icon = .ICON_BOX}
 
 fileselection := i32(0)
 dropdown_rect := rl.Rectangle{0,0, 128, top_size.y}
@@ -145,33 +145,34 @@ b_scale := false
 b_pause := false
 b_stop := false
 b_drag := false
-b_show_sprite_rect := false
 
 draw_file_menu :: proc()
 {
     rl.GuiSetIconScale(1)
     rl.GuiDropdownBox(dropdown_rect,"File", &fileselection, false)
-    draw_icon_button(rl.GuiIconName.ICON_PLAYER_PLAY, i32(play_rect.x), i32(play_rect.y), 2, rl.GREEN, rl.GRAY, &b_play)
-    draw_icon_button(rl.GuiIconName.ICON_PLAYER_PAUSE, i32(pause_rect.x), i32(pause_rect.y), 2, rl.YELLOW, rl.GRAY, &b_pause)
-    draw_icon_button(rl.GuiIconName.ICON_PLAYER_STOP, i32(stop_rect.x), i32(stop_rect.y), 2, rl.RED, rl.GRAY, &b_stop)
-    if(draw_icon_button_tt(rl.GuiIconName.ICON_TARGET, i32(drag_rect.x), i32(drag_rect.y), 2, rl.PURPLE, rl.GRAY, &b_drag, "Select an object") > 0){
+    draw_icon_button(&play_icon)
+    draw_icon_button(&pause_icon)
+    draw_icon_button(&stop_icon)
+
+    if(draw_icon_button_tt(&drag_icon,"Select an object") > 0){
         pick_sprite_state = .None
     }
     handle_transforms()
-    draw_icon_button_tt(rl.GuiIconName.ICON_BOX, i32(show_sprite_rect.x), i32(show_sprite_rect.y), 2, rl.BLACK, rl.GRAY, &b_show_sprite_rect, "Show Box around sprite")
+    draw_icon_button_tt(&show_sprite_icon,"Show Box around sprite")
 }
 
 handle_transforms :: proc()
 {
-    if(draw_icon_button_tt(rl.GuiIconName.ICON_TARGET_MOVE, i32(pos_rect.x), i32(pos_rect.y), 2, rl.BLUE, rl.GRAY, &b_pos, "Translate Sprite") > 0){
+    if(draw_icon_button_tt(&pos_icon, "Translate Sprite") > 0){
         b_rot, b_scale = false, false
     }
-    else if(draw_icon_button_tt(rl.GuiIconName.ICON_ROTATE, i32(rot_rect.x), i32(rot_rect.y), 2, rl.BLUE, rl.GRAY, &b_rot, "Rotate Sprite") > 0){
+    else if(draw_icon_button_tt(&rot_icon, "Rotate Sprite") > 0){
         b_pos, b_scale = false, false
     }
-    else if(draw_icon_button_tt(rl.GuiIconName.ICON_SCALE, i32(scale_rect.x), i32(scale_rect.y), 2, rl.BLUE, rl.GRAY, &b_scale, "Scale Sprite") > 0){
+    else if(draw_icon_button_tt(&scale_icon, "Scale Sprite") > 0){
         b_pos, b_rot = false, false
     }
+
     if(len(sprites) > 0)
     {
         sprite := &sprites[curr_sprite]
@@ -196,7 +197,27 @@ handle_transforms :: proc()
     }
 }
 
-draw_icon_button :: proc(icon_id : rl.GuiIconName, x, y, pixel_size : i32, active_color, inactive_color : rl.Color, active : ^bool) -> i32
+draw_icon_button :: proc(icon : ^TopMenuIcon, pixel_size := i32(2)) -> i32
+{
+    ret := rl.GuiToggle(icon.rect, "", &icon.active)
+    color := icon^.active ?  icon.color : rl.GRAY
+    rl.GuiDrawIcon(icon.icon, i32(icon.rect.x), i32(icon.rect.y), pixel_size, color)
+    return ret
+}
+draw_icon_button_tt :: proc(icon : ^TopMenuIcon, tooltip: cstring, pixel_size := i32(2)) -> i32
+{
+    ret := draw_icon_button(icon, pixel_size)
+    mouse_pos := rl.GetMousePosition()
+    if rl.CheckCollisionPointRec(mouse_pos, icon.rect) {
+        text_width := rl.MeasureText(tooltip, 10)
+        tooltip_box := rl.Rectangle{mouse_pos.x + 10, mouse_pos.y + 10, f32(text_width + 8), 20}
+        rl.DrawRectangleRec(tooltip_box, rl.DARKGRAY)
+        rl.DrawText(tooltip, i32(tooltip_box.x + 4), i32(tooltip_box.y + 4), 10, rl.WHITE)
+    }
+    return ret
+}
+
+/*draw_icon_button :: proc(icon_id : rl.GuiIconName, x, y, pixel_size : i32, active_color, inactive_color : rl.Color, active : ^bool) -> i32
 {
    rect := rl.Rectangle{f32(x),f32(y),f32(16 * pixel_size), f32(16 * pixel_size)}
    ret := rl.GuiToggle(rect,"",active)
@@ -214,21 +235,16 @@ draw_icon_button_tt :: proc(icon_id : rl.GuiIconName, x, y, pixel_size : i32,
     color := active^ ? active_color : inactive_color
     rl.GuiDrawIcon(icon_id, x, y, pixel_size, color)
 
-    // Get current mouse position
     mouse_pos := rl.GetMousePosition()
     if rl.CheckCollisionPointRec(mouse_pos, rect) {
-        // Measure tooltip text width (assumes a font size of 10)
         text_width := rl.MeasureText(tooltip, 10)
-        // Create a background rectangle for the tooltip with some padding
         tooltip_box := rl.Rectangle{mouse_pos.x + 10, mouse_pos.y + 10, f32(text_width + 8), 20}
-        // Draw a dark background for readability
         rl.DrawRectangleRec(tooltip_box, rl.DARKGRAY)
-        // Draw the tooltip text over it
         rl.DrawText(tooltip, i32(tooltip_box.x + 4), i32(tooltip_box.y + 4), 10, rl.WHITE)
     }
     return ret
 }
-
+*/
 /// Swap Up, This proc takes a sprite array and its index and does a swap with the previous element
 swap_up :: proc(sprite_array : [dynamic]Sprite, curr_sprite : ^int)
 {
