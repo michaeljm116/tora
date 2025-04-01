@@ -44,11 +44,12 @@ draw_left_panel :: proc()
 	{
         if rl.GuiLabelButton(temp_rec, str.clone_to_cstring(s.name)){
             curr_sprite = i
+            editing_name = !editing_name
         }
     	temp_rec.y += lp_spacing
 	}
 	set_default_gui()
-	if(len(sprites) > 0) do	name_the_sprite(curr_sprite)
+	if(len(sprites) > 0 && editing_name) do	name_the_sprite(curr_sprite)
 }
 
 // change layer order,
@@ -63,7 +64,7 @@ change_layer_order :: proc()
     }
 }
 
-editing_name := true
+editing_name := false
 name_the_sprite :: proc(index: int)
 {
     sprite := &sprites[index]
@@ -100,6 +101,7 @@ draw_top_panel :: proc()
 {
 	rl.DrawRectangleRec(top_panel, rl.DARKGRAY)
 	draw_file_menu()
+	handle_save_menu()
 }
 
 TopMenuIcon :: struct{
@@ -113,9 +115,11 @@ place_icon_next_to :: proc(icon : ^TopMenuIcon, prev_rect : rl.Rectangle, is_rig
     icon.rect = { prev_rect.x + prev_rect.width, prev_rect.y, prev_rect.width, prev_rect.height}
 }
 
+
+
 save_rect := rl.Rectangle{0,0,top_size.x, top_size.y}
 load_rect := rl.Rectangle{save_rect.x + save_rect.width, 0, top_size.x, top_size.y}
-play_rect  := rl.Rectangle{dropdown_rect.width,0, top_size.x, top_size.y}
+play_rect  := rl.Rectangle{load_rect.x + load_rect.width,0, top_size.x, top_size.y}
 pause_rect := rl.Rectangle{play_rect.x  + play_rect.width,  0, top_size.x, top_size.y}
 stop_rect  := rl.Rectangle{pause_rect.x + pause_rect.width, 0, top_size.x, top_size.y}
 drag_rect  := rl.Rectangle{stop_rect.x + stop_rect.width, 0, top_size.x, top_size.y}
@@ -124,8 +128,8 @@ rot_rect   := rl.Rectangle{pos_rect.x + pos_rect.width, 0, top_size.x, top_size.
 scale_rect := rl.Rectangle{rot_rect.x + rot_rect.width, 0, top_size.x, top_size.y}
 show_sprite_rect := rl.Rectangle{scale_rect.x + scale_rect.width, 0, top_size.x, top_size.y}
 
-save_icon := TopMenuIcon{rect = save_rect, active = false,color = rl.BLACK,icon = .ICON_FILE_SAVE}
-load_icon := TopMenuIcon{rect = load_rect, active = false,color = rl.BLACK,icon = .ICON_FILE_OPEN}
+save_icon := TopMenuIcon{rect = save_rect, active = false,color = rl.BLACK,icon = .ICON_FILE_SAVE_CLASSIC}
+load_icon := TopMenuIcon{rect = load_rect, active = false,color = rl.BLACK,icon = .ICON_FOLDER_FILE_OPEN}
 play_icon := TopMenuIcon{rect = play_rect, active = false,color = rl.GREEN,icon = .ICON_PLAYER_PLAY}
 pause_icon := TopMenuIcon{rect = pause_rect, active = false,color = rl.YELLOW,icon = .ICON_PLAYER_PAUSE}
 stop_icon := TopMenuIcon{rect = stop_rect, active = false,color = rl.RED,icon = .ICON_PLAYER_STOP}
@@ -149,7 +153,8 @@ b_drag := false
 draw_file_menu :: proc()
 {
     rl.GuiSetIconScale(1)
-    rl.GuiDropdownBox(dropdown_rect,"File", &fileselection, false)
+    draw_icon_button(&load_icon)
+    draw_icon_button(&save_icon)
     draw_icon_button(&play_icon)
     draw_icon_button(&pause_icon)
     draw_icon_button(&stop_icon)
@@ -161,33 +166,73 @@ draw_file_menu :: proc()
     draw_icon_button_tt(&show_sprite_icon,"Show Box around sprite")
 }
 
+anim_model_name := ""
+handle_save_menu :: proc()
+{
+    if(save_icon.active){
+        //if anim_model_name == ""
+        {
+            secret := false
+            name_buf := str.clone_to_cstring(anim_model_name)
+            input_rect := rl.Rectangle{
+                x = left_panel.x,
+                y = 132,
+                width = left_panel.width,
+                height = 132,
+            }
+            rl.GuiTextInputBox(input_rect,
+                "Name Sprite",               // title
+                "Enter new sprite name:",    // message
+                "Save",                      // button text
+                name_buf,                    // pointer to the buffer
+                128,                         // maximum text length
+                &secret
+            )
+            anim_model_name = str.clone_from_cstring(name_buf)
+        }
+        anim_model := AnimatedModel{
+            model = {
+                name = "model",
+                trans_w = {
+                    scale = {1,1}
+                },
+                sprites = sprites
+            },
+            has_anim = false,
+            texture_path = "assets/animation-test.png"
+        }
+        save_animated_model(anim_model)
+        save_icon.active = false
+    }
+}
+
 handle_transforms :: proc()
 {
     if(draw_icon_button_tt(&pos_icon, "Translate Sprite") > 0){
-        b_rot, b_scale = false, false
+        rot_icon.active, scale_icon.active = false, false
     }
     else if(draw_icon_button_tt(&rot_icon, "Rotate Sprite") > 0){
-        b_pos, b_scale = false, false
+        pos_icon.active, scale_icon.active = false, false
     }
     else if(draw_icon_button_tt(&scale_icon, "Scale Sprite") > 0){
-        b_pos, b_rot = false, false
+        pos_icon.active, rot_icon.active = false, false
     }
 
     if(len(sprites) > 0)
     {
         sprite := &sprites[curr_sprite]
-        if(b_pos)
+        if(pos_icon.active)
         {
             if(rl.IsKeyDown(.W)){sprite.dst.y -= 1}
             if(rl.IsKeyDown(.S)){sprite.dst.y += 1}
             if(rl.IsKeyDown(.A)){sprite.dst.x -= 1}
             if(rl.IsKeyDown(.D)){sprite.dst.x += 1}
         }
-        if(b_rot){
+        if(rot_icon.active){
             if(rl.IsKeyDown(.A)){sprite.rotation -= 1}
             if(rl.IsKeyDown(.D)){sprite.rotation += 1}
         }
-        if(b_scale)
+        if(scale_icon.active)
         {
             if(rl.IsKeyDown(.W)){sprite.dst.height += 1}
             if(rl.IsKeyDown(.S)){sprite.dst.height -= 1}
@@ -217,34 +262,6 @@ draw_icon_button_tt :: proc(icon : ^TopMenuIcon, tooltip: cstring, pixel_size :=
     return ret
 }
 
-/*draw_icon_button :: proc(icon_id : rl.GuiIconName, x, y, pixel_size : i32, active_color, inactive_color : rl.Color, active : ^bool) -> i32
-{
-   rect := rl.Rectangle{f32(x),f32(y),f32(16 * pixel_size), f32(16 * pixel_size)}
-   ret := rl.GuiToggle(rect,"",active)
-   color := active^ ? active_color : inactive_color
-   rl.GuiDrawIcon(icon_id, x, y, pixel_size, color)
-   return ret
-}
-
-draw_icon_button_tt :: proc(icon_id : rl.GuiIconName, x, y, pixel_size : i32,
-                          active_color, inactive_color : rl.Color, active : ^bool,
-                          tooltip: cstring) -> i32 {
-    // Define button rectangle
-    rect := rl.Rectangle{f32(x), f32(y), f32(16 * pixel_size), f32(16 * pixel_size)}
-    ret := rl.GuiToggle(rect, "", active)
-    color := active^ ? active_color : inactive_color
-    rl.GuiDrawIcon(icon_id, x, y, pixel_size, color)
-
-    mouse_pos := rl.GetMousePosition()
-    if rl.CheckCollisionPointRec(mouse_pos, rect) {
-        text_width := rl.MeasureText(tooltip, 10)
-        tooltip_box := rl.Rectangle{mouse_pos.x + 10, mouse_pos.y + 10, f32(text_width + 8), 20}
-        rl.DrawRectangleRec(tooltip_box, rl.DARKGRAY)
-        rl.DrawText(tooltip, i32(tooltip_box.x + 4), i32(tooltip_box.y + 4), 10, rl.WHITE)
-    }
-    return ret
-}
-*/
 /// Swap Up, This proc takes a sprite array and its index and does a swap with the previous element
 swap_up :: proc(sprite_array : [dynamic]Sprite, curr_sprite : ^int)
 {
