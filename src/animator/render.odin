@@ -27,7 +27,7 @@ render :: proc(txtr: rl.Texture2D) {
 	}
 	for s in sprites {
 		rl.DrawTexturePro(txtr, s.src, s.dst, s.origin, s.rotation, rl.WHITE)
-		if(drag_icon.active){
+		if(show_sprite_icon.active){
 		  rl.DrawRectangleLinesEx(s.dst, 4, rl.BLACK)
 		}
 	}

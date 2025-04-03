@@ -115,28 +115,26 @@ place_icon_next_to :: proc(icon : ^TopMenuIcon, prev_rect : rl.Rectangle, is_rig
     icon.rect = { prev_rect.x + prev_rect.width, prev_rect.y, prev_rect.width, prev_rect.height}
 }
 
-
-
-save_rect := rl.Rectangle{0,0,top_size.x, top_size.y}
-load_rect := rl.Rectangle{save_rect.x + save_rect.width, 0, top_size.x, top_size.y}
-play_rect  := rl.Rectangle{load_rect.x + load_rect.width,0, top_size.x, top_size.y}
-pause_rect := rl.Rectangle{play_rect.x  + play_rect.width,  0, top_size.x, top_size.y}
-stop_rect  := rl.Rectangle{pause_rect.x + pause_rect.width, 0, top_size.x, top_size.y}
-drag_rect  := rl.Rectangle{stop_rect.x + stop_rect.width, 0, top_size.x, top_size.y}
-pos_rect   := rl.Rectangle{drag_rect.x + drag_rect.width, 0, top_size.x, top_size.y}
-rot_rect   := rl.Rectangle{pos_rect.x + pos_rect.width, 0, top_size.x, top_size.y}
-scale_rect := rl.Rectangle{rot_rect.x + rot_rect.width, 0, top_size.x, top_size.y}
+save_rect        := rl.Rectangle{0,0,top_size.x, top_size.y}
+load_rect        := rl.Rectangle{save_rect.x + save_rect.width, 0, top_size.x, top_size.y}
+play_rect        := rl.Rectangle{load_rect.x + load_rect.width,0, top_size.x, top_size.y}
+pause_rect       := rl.Rectangle{play_rect.x  + play_rect.width,  0, top_size.x, top_size.y}
+stop_rect        := rl.Rectangle{pause_rect.x + pause_rect.width, 0, top_size.x, top_size.y}
+drag_rect        := rl.Rectangle{stop_rect.x + stop_rect.width, 0, top_size.x, top_size.y}
+pos_rect         := rl.Rectangle{drag_rect.x + drag_rect.width, 0, top_size.x, top_size.y}
+rot_rect         := rl.Rectangle{pos_rect.x + pos_rect.width, 0, top_size.x, top_size.y}
+scale_rect       := rl.Rectangle{rot_rect.x + rot_rect.width, 0, top_size.x, top_size.y}
 show_sprite_rect := rl.Rectangle{scale_rect.x + scale_rect.width, 0, top_size.x, top_size.y}
 
-save_icon := TopMenuIcon{rect = save_rect, active = false,color = rl.BLACK,icon = .ICON_FILE_SAVE_CLASSIC}
-load_icon := TopMenuIcon{rect = load_rect, active = false,color = rl.BLACK,icon = .ICON_FOLDER_FILE_OPEN}
-play_icon := TopMenuIcon{rect = play_rect, active = false,color = rl.GREEN,icon = .ICON_PLAYER_PLAY}
-pause_icon := TopMenuIcon{rect = pause_rect, active = false,color = rl.YELLOW,icon = .ICON_PLAYER_PAUSE}
-stop_icon := TopMenuIcon{rect = stop_rect, active = false,color = rl.RED,icon = .ICON_PLAYER_STOP}
-drag_icon := TopMenuIcon{rect = drag_rect, active = false,color = rl.PURPLE,icon = .ICON_TARGET}
-pos_icon := TopMenuIcon{rect = pos_rect, active = false,color = rl.BLUE,icon = .ICON_TARGET_MOVE}
-rot_icon := TopMenuIcon{rect = rot_rect, active = false,color = rl.BLUE,icon = .ICON_ROTATE}
-scale_icon := TopMenuIcon{rect = scale_rect, active = false,color = rl.BLUE,icon = .ICON_SCALE}
+save_icon        := TopMenuIcon{rect = save_rect, active = false,color = rl.BLACK,icon = .ICON_FILE_SAVE_CLASSIC}
+load_icon        := TopMenuIcon{rect = load_rect, active = false,color = rl.BLACK,icon = .ICON_FOLDER_FILE_OPEN}
+play_icon        := TopMenuIcon{rect = play_rect, active = false,color = rl.GREEN,icon = .ICON_PLAYER_PLAY}
+pause_icon       := TopMenuIcon{rect = pause_rect, active = false,color = rl.YELLOW,icon = .ICON_PLAYER_PAUSE}
+stop_icon        := TopMenuIcon{rect = stop_rect, active = false,color = rl.RED,icon = .ICON_PLAYER_STOP}
+drag_icon        := TopMenuIcon{rect = drag_rect, active = false,color = rl.PURPLE,icon = .ICON_TARGET}
+pos_icon         := TopMenuIcon{rect = pos_rect, active = false,color = rl.BLUE,icon = .ICON_TARGET_MOVE}
+rot_icon         := TopMenuIcon{rect = rot_rect, active = false,color = rl.BLUE,icon = .ICON_ROTATE}
+scale_icon       := TopMenuIcon{rect = scale_rect, active = false,color = rl.BLUE,icon = .ICON_SCALE}
 show_sprite_icon := TopMenuIcon{rect = show_sprite_rect, active = false,color = rl.BLACK,icon = .ICON_BOX}
 
 fileselection := i32(0)
@@ -249,6 +247,7 @@ draw_icon_button :: proc(icon : ^TopMenuIcon, pixel_size := i32(2)) -> i32
     rl.GuiDrawIcon(icon.icon, i32(icon.rect.x), i32(icon.rect.y), pixel_size, color)
     return ret
 }
+
 draw_icon_button_tt :: proc(icon : ^TopMenuIcon, tooltip: cstring, pixel_size := i32(2)) -> i32
 {
     ret := draw_icon_button(icon, pixel_size)
