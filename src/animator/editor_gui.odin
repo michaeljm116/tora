@@ -96,7 +96,6 @@ name_the_sprite :: proc(index: int)
 ** OBV things like file save options etc is going here
 ** But also many of the edit functions will go here too
 \** ------------------ TOP PANEL ------------------ **/
-
 draw_top_panel :: proc()
 {
 	rl.DrawRectangleRec(top_panel, rl.DARKGRAY)
@@ -124,29 +123,23 @@ drag_rect        := rl.Rectangle{stop_rect.x + stop_rect.width, 0, top_size.x, t
 pos_rect         := rl.Rectangle{drag_rect.x + drag_rect.width, 0, top_size.x, top_size.y}
 rot_rect         := rl.Rectangle{pos_rect.x + pos_rect.width, 0, top_size.x, top_size.y}
 scale_rect       := rl.Rectangle{rot_rect.x + rot_rect.width, 0, top_size.x, top_size.y}
-show_sprite_rect := rl.Rectangle{scale_rect.x + scale_rect.width, 0, top_size.x, top_size.y}
+origin_rect      := rl.Rectangle{scale_rect.x + scale_rect.width, 0, top_size.x, top_size.y}
+show_sprite_rect := rl.Rectangle{origin_rect.x + origin_rect.width, 0, top_size.x, top_size.y}
 
-save_icon        := TopMenuIcon{rect = save_rect, active = false,color = rl.BLACK,icon = .ICON_FILE_SAVE_CLASSIC}
-load_icon        := TopMenuIcon{rect = load_rect, active = false,color = rl.BLACK,icon = .ICON_FOLDER_FILE_OPEN}
-play_icon        := TopMenuIcon{rect = play_rect, active = false,color = rl.GREEN,icon = .ICON_PLAYER_PLAY}
-pause_icon       := TopMenuIcon{rect = pause_rect, active = false,color = rl.YELLOW,icon = .ICON_PLAYER_PAUSE}
-stop_icon        := TopMenuIcon{rect = stop_rect, active = false,color = rl.RED,icon = .ICON_PLAYER_STOP}
-drag_icon        := TopMenuIcon{rect = drag_rect, active = false,color = rl.PURPLE,icon = .ICON_TARGET}
-pos_icon         := TopMenuIcon{rect = pos_rect, active = false,color = rl.BLUE,icon = .ICON_TARGET_MOVE}
-rot_icon         := TopMenuIcon{rect = rot_rect, active = false,color = rl.BLUE,icon = .ICON_ROTATE}
-scale_icon       := TopMenuIcon{rect = scale_rect, active = false,color = rl.BLUE,icon = .ICON_SCALE}
-show_sprite_icon := TopMenuIcon{rect = show_sprite_rect, active = false,color = rl.BLACK,icon = .ICON_BOX}
+save_icon        := TopMenuIcon{rect = save_rect, active = false, color = rl.BLACK,icon = .ICON_FILE_SAVE_CLASSIC}
+load_icon        := TopMenuIcon{rect = load_rect, active = false, color = rl.BLACK,icon = .ICON_FOLDER_FILE_OPEN}
+play_icon        := TopMenuIcon{rect = play_rect, active = false, color = rl.GREEN,icon = .ICON_PLAYER_PLAY}
+pause_icon       := TopMenuIcon{rect = pause_rect, active = false, color = rl.YELLOW,icon = .ICON_PLAYER_PAUSE}
+stop_icon        := TopMenuIcon{rect = stop_rect, active = false, color = rl.RED,icon = .ICON_PLAYER_STOP}
+drag_icon        := TopMenuIcon{rect = drag_rect, active = false, color = rl.PURPLE,icon = .ICON_CURSOR_HAND}
+pos_icon         := TopMenuIcon{rect = pos_rect, active = false, color = rl.BLUE,icon = .ICON_TARGET_MOVE}
+rot_icon         := TopMenuIcon{rect = rot_rect, active = false, color = rl.BLUE,icon = .ICON_ROTATE}
+scale_icon       := TopMenuIcon{rect = scale_rect, active = false, color = rl.BLUE,icon = .ICON_SCALE}
+origin_icon      := TopMenuIcon{rect = origin_rect, active = false, color = rl.BLUE, icon = .ICON_TARGET}
+show_sprite_icon := TopMenuIcon{rect = show_sprite_rect, active = false, color = rl.BLACK,icon = .ICON_BOX}
 
 fileselection := i32(0)
 dropdown_rect := rl.Rectangle{0,0, 128, top_size.y}
-b_save := false
-b_play := false
-b_pos := false
-b_rot := false
-b_scale := false
-b_pause := false
-b_stop := false
-b_drag := false
 
 draw_file_menu :: proc()
 {
@@ -204,6 +197,10 @@ handle_save_menu :: proc()
     }
 }
 
+toggle_off_others :: proc(icon : ^TopMenuIcon)
+{
+   // rl.GuiToggle()
+}
 handle_transforms :: proc()
 {
     if(draw_icon_button_tt(&pos_icon, "Translate Sprite") > 0){
@@ -214,6 +211,9 @@ handle_transforms :: proc()
     }
     else if(draw_icon_button_tt(&scale_icon, "Scale Sprite") > 0){
         pos_icon.active, rot_icon.active = false, false
+    }
+    else if(draw_icon_button_tt(&origin_icon, "Change Origin") > 0){
+
     }
 
     if(len(sprites) > 0)
@@ -232,10 +232,18 @@ handle_transforms :: proc()
         }
         if(scale_icon.active)
         {
-            if(rl.IsKeyDown(.W)){sprite.dst.height += 1}
-            if(rl.IsKeyDown(.S)){sprite.dst.height -= 1}
+            if(rl.IsKeyDown(.W)){sprite.dst.height -= 1}
+            if(rl.IsKeyDown(.S)){sprite.dst.height += 1}
             if(rl.IsKeyDown(.A)){sprite.dst.width -= 1}
             if(rl.IsKeyDown(.D)){sprite.dst.width += 1}
+        }
+        if(origin_icon.active)
+        {
+            rl.DrawCircle(i32(sprite.dst.x + sprite.origin.x), i32(sprite.dst.y + sprite.origin.y), 5, rl.BLACK)
+            if(rl.IsKeyDown(.W)){sprite.origin.y -= 1}
+            if(rl.IsKeyDown(.S)){sprite.origin.y += 1}
+            if(rl.IsKeyDown(.A)){sprite.origin.x -= 1}
+            if(rl.IsKeyDown(.D)){sprite.origin.x += 1}
         }
     }
 }
