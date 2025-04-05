@@ -18,3 +18,20 @@ save_animated_model :: proc(anim_model : AnimatedModel)
     name := fmt.tprintf("%s/%s.json","assets/",anim_model.model.name)
     os.write_entire_file(name, data)
 }
+
+import_animated_model :: proc(path: string) -> AnimatedModel {
+    data, ok := os.read_entire_file(path)
+    if !ok {
+        fmt.eprintln("Error reading file")
+        return AnimatedModel{}
+    }
+    defer delete(data)
+
+    anim_model: AnimatedModel
+    uerr := json.unmarshal(data, &anim_model)
+    if uerr != nil {
+        fmt.eprintln("Error unmarshaling JSON:", uerr)
+        return AnimatedModel{}
+    }
+    return anim_model
+}

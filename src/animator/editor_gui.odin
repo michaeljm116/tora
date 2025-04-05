@@ -197,23 +197,20 @@ handle_save_menu :: proc()
     }
 }
 
-toggle_off_others :: proc(icon : ^TopMenuIcon)
-{
-   // rl.GuiToggle()
-}
+
 handle_transforms :: proc()
 {
     if(draw_icon_button_tt(&pos_icon, "Translate Sprite") > 0){
-        rot_icon.active, scale_icon.active = false, false
+        rot_icon.active, scale_icon.active, origin_icon.active = false, false, false
     }
     else if(draw_icon_button_tt(&rot_icon, "Rotate Sprite") > 0){
-        pos_icon.active, scale_icon.active = false, false
+        pos_icon.active, scale_icon.active, origin_icon.active = false, false, false
     }
     else if(draw_icon_button_tt(&scale_icon, "Scale Sprite") > 0){
-        pos_icon.active, rot_icon.active = false, false
+        pos_icon.active, rot_icon.active, origin_icon.active = false, false, false
     }
     else if(draw_icon_button_tt(&origin_icon, "Change Origin") > 0){
-
+        pos_icon.active, rot_icon.active, scale_icon.active = false, false, false
     }
 
     if(len(sprites) > 0)
@@ -250,8 +247,13 @@ handle_transforms :: proc()
 
 draw_icon_button :: proc(icon : ^TopMenuIcon, pixel_size := i32(2)) -> i32
 {
-    ret := rl.GuiToggle(icon.rect, "", &icon.active)
-    color := icon^.active ?  icon.color : rl.GRAY
+    prev_active := icon^.active
+    rl.GuiToggle(icon.rect, "", &icon.active)
+    active := bool(icon^.active)
+    ret := i32(prev_active != active)
+
+    color := active?  icon.color : rl.GRAY
+    
     rl.GuiDrawIcon(icon.icon, i32(icon.rect.x), i32(icon.rect.y), pixel_size, color)
     return ret
 }
