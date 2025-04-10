@@ -8,23 +8,19 @@ right_window := rl.Rectangle{left_window.x + left_window.width, left_window.y, l
 
 view_it := true
 
+left_window_text := []cstring{"Source Texture", "Model View"}
+right_window_text := []cstring{"Model View" , "Animation View"}
+window_text_index := 0
 
 render :: proc(txtr: rl.Texture2D) {
 	square := rl.Rectangle{1100, 100, 100, 100}
-	txtr_rec_src := rl.Rectangle{0, 0, f32(txtr.width), f32(txtr.height)}
-	txtr_rec_dst := rl.Rectangle {
-		left_window.x,
-		left_window.y,
-		left_window.width,
-		left_window.height,
-	}
 	rl.GuiEnable()
-	rl.GuiPanel(left_window, "Source Texture")
-	rl.GuiPanel(right_window, "Model View")
-	{
-		rl.DrawTexturePro(txtr, txtr_rec_src, txtr_rec_dst, {0, 0}, 0, rl.WHITE)
-		if(drag_icon.active) do select_sprite(txtr)
-	}
+	window_text_index = viewer_icon.active ? 1 : 0
+	rl.GuiPanel(left_window, left_window_text[window_text_index])
+	rl.GuiPanel(right_window, right_window_text[window_text_index])
+
+	if(!viewer_icon.active) do draw_texture(txtr)
+	else do draw_model(temp_model, txtr)
 	for s in sprites {
 		rl.DrawTexturePro(txtr, s.src, s.dst, s.origin, s.rotation, rl.WHITE)
 		if(show_sprite_icon.active){
@@ -35,6 +31,28 @@ render :: proc(txtr: rl.Texture2D) {
 	rl.DrawRectangleRec(bottom_panel, rl.DARKGRAY)
 	update_editor_gui()
 	draw_editor_gui()
+}
+
+draw_model :: proc (model: AnimatedModel, txtr: rl.Texture2D)
+{
+    for sprite in model.model.sprites
+    {
+        rl.DrawTexturePro(txtr, sprite.src, sprite.dst, sprite.origin, sprite.rotation, rl.WHITE)
+    }
+}
+
+draw_texture :: proc(txtr: rl.Texture2D)
+{
+    txtr_rec_src := rl.Rectangle{0, 0, f32(txtr.width), f32(txtr.height)}
+	txtr_rec_dst := rl.Rectangle {
+		left_window.x,
+		left_window.y,
+		left_window.width,
+		left_window.height,
+	}
+
+	rl.DrawTexturePro(txtr, txtr_rec_src, txtr_rec_dst, {0, 0}, 0, rl.WHITE)
+	if(drag_icon.active) do select_sprite(txtr)
 }
 
 draw_dot :: proc(position: rl.Vector2) {

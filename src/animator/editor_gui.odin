@@ -23,6 +23,7 @@ draw_editor_gui :: proc()
 {
     draw_left_panel()
     draw_top_panel()
+    draw_tool_tip()
 }
 
 /** ------------------ LEFT PANEL ------------------ **\
@@ -101,6 +102,7 @@ draw_top_panel :: proc()
 	rl.DrawRectangleRec(top_panel, rl.DARKGRAY)
 	draw_file_menu()
 	handle_save_menu()
+	handle_model_loading()
 }
 
 TopMenuIcon :: struct{
@@ -110,11 +112,13 @@ TopMenuIcon :: struct{
     icon : rl.GuiIconName
 }
 
+
 place_icon_next_to :: proc(icon : ^TopMenuIcon, prev_rect : rl.Rectangle, is_right := true ){
     icon.rect = { prev_rect.x + prev_rect.width, prev_rect.y, prev_rect.width, prev_rect.height}
 }
 
-save_rect        := rl.Rectangle{0,0,top_size.x, top_size.y}
+viewer_rect        := rl.Rectangle{0,0,top_size.x * 2, top_size.y}
+save_rect        := rl.Rectangle{viewer_rect.x + viewer_rect.width, 0, top_size.x, top_size.y}
 load_rect        := rl.Rectangle{save_rect.x + save_rect.width, 0, top_size.x, top_size.y}
 play_rect        := rl.Rectangle{load_rect.x + load_rect.width,0, top_size.x, top_size.y}
 pause_rect       := rl.Rectangle{play_rect.x  + play_rect.width,  0, top_size.x, top_size.y}
@@ -126,6 +130,7 @@ scale_rect       := rl.Rectangle{rot_rect.x + rot_rect.width, 0, top_size.x, top
 origin_rect      := rl.Rectangle{scale_rect.x + scale_rect.width, 0, top_size.x, top_size.y}
 show_sprite_rect := rl.Rectangle{origin_rect.x + origin_rect.width, 0, top_size.x, top_size.y}
 
+viewer_icon        := TopMenuIcon{rect = viewer_rect, active = false, color = rl.WHITE,icon = .ICON_PHOTO_CAMERA}
 save_icon        := TopMenuIcon{rect = save_rect, active = false, color = rl.BLACK,icon = .ICON_FILE_SAVE_CLASSIC}
 load_icon        := TopMenuIcon{rect = load_rect, active = false, color = rl.BLACK,icon = .ICON_FOLDER_FILE_OPEN}
 play_icon        := TopMenuIcon{rect = play_rect, active = false, color = rl.GREEN,icon = .ICON_PLAYER_PLAY}
@@ -138,12 +143,14 @@ scale_icon       := TopMenuIcon{rect = scale_rect, active = false, color = rl.BL
 origin_icon      := TopMenuIcon{rect = origin_rect, active = false, color = rl.BLUE, icon = .ICON_TARGET}
 show_sprite_icon := TopMenuIcon{rect = show_sprite_rect, active = false, color = rl.BLACK,icon = .ICON_BOX}
 
+
 fileselection := i32(0)
 dropdown_rect := rl.Rectangle{0,0, 128, top_size.y}
 
 draw_file_menu :: proc()
 {
     rl.GuiSetIconScale(1)
+    draw_icon_button_tt(&viewer_icon, "Switch between Texture and Model viewer")
     draw_icon_button(&load_icon)
     draw_icon_button(&save_icon)
     draw_icon_button(&play_icon)
@@ -197,6 +204,16 @@ handle_save_menu :: proc()
     }
 }
 
+model_loaded := false
+temp_model : AnimatedModel
+handle_model_loading :: proc()
+{
+    if(viewer_icon.active && !model_loaded)
+    {
+        temp_model = import_animated_model("assets/Full_Model.json")
+        model_loaded = true
+    }
+}
 
 handle_transforms :: proc()
 {
@@ -253,22 +270,34 @@ draw_icon_button :: proc(icon : ^TopMenuIcon, pixel_size := i32(2)) -> i32
     ret := i32(prev_active != active)
 
     color := active?  icon.color : rl.GRAY
-    
+
     rl.GuiDrawIcon(icon.icon, i32(icon.rect.x), i32(icon.rect.y), pixel_size, color)
     return ret
 }
 
+tooltip_active := true
+tooltip_text : cstring = ""
 draw_icon_button_tt :: proc(icon : ^TopMenuIcon, tooltip: cstring, pixel_size := i32(2)) -> i32
 {
     ret := draw_icon_button(icon, pixel_size)
     mouse_pos := rl.GetMousePosition()
-    if rl.CheckCollisionPointRec(mouse_pos, icon.rect) {
-        text_width := rl.MeasureText(tooltip, 10)
-        tooltip_box := rl.Rectangle{mouse_pos.x + 10, mouse_pos.y + 10, f32(text_width + 8), 20}
-        rl.DrawRectangleRec(tooltip_box, rl.DARKGRAY)
-        rl.DrawText(tooltip, i32(tooltip_box.x + 4), i32(tooltip_box.y + 4), 10, rl.WHITE)
+    new_tt := rl.CheckCollisionPointRec(mouse_pos, icon.rect)
+    if new_tt {
+        tooltip_text = tooltip
+        tooltip_active = true
     }
     return ret
+}
+draw_tool_tip :: proc()
+{
+    if(tooltip_active){
+        mouse_pos := rl.GetMousePosition()
+        text_width := rl.MeasureText(tooltip_text, 10)
+        tooltip_box := rl.Rectangle{mouse_pos.x + 10, mouse_pos.y + 10, f32(text_width + 8), 20}
+        rl.DrawRectangleRec(tooltip_box, rl.DARKGRAY)
+        rl.DrawText(tooltip_text, i32(tooltip_box.x + 4), i32(tooltip_box.y + 4), 10, rl.WHITE)
+        tooltip_active = false
+    }
 }
 
 /// Swap Up, This proc takes a sprite array and its index and does a swap with the previous element
