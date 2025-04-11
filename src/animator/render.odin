@@ -35,9 +35,16 @@ render :: proc(txtr: rl.Texture2D) {
 
 draw_model :: proc (model: AnimatedModel, txtr: rl.Texture2D)
 {
+    trans := model.model.trans_w
     for sprite in model.model.sprites
     {
-        rl.DrawTexturePro(txtr, sprite.src, sprite.dst, sprite.origin, sprite.rotation, rl.WHITE)
+        dst := rl.Rectangle{
+            sprite.dst.x + trans.position.x,
+            sprite.dst.y + trans.position.y,
+            sprite.dst.width * trans.scale.x,
+            sprite.dst.height * trans.scale.y
+        }
+        rl.DrawTexturePro(txtr, sprite.src, dst, sprite.origin, sprite.rotation, rl.WHITE)
     }
 }
 

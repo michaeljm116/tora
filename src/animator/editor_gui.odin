@@ -199,6 +199,10 @@ handle_save_menu :: proc()
             has_anim = false,
             texture_path = "assets/animation-test.png"
         }
+
+        for &s in sprites{
+            s.dst.x -= right_window.x
+        }
         save_animated_model(anim_model)
         save_icon.active = false
     }
