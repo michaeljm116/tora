@@ -113,12 +113,11 @@ draw_file_menu :: proc()
     draw_icon_button(&play_icon)
     draw_icon_button(&pause_icon)
     draw_icon_button(&stop_icon)
-
-    if(draw_icon_button_tt(&drag_icon,"Select an object") > 0){
-        pick_sprite_state = .None
-    }
-    handle_transforms()
     draw_icon_button_tt(&show_sprite_icon,"Show Box around sprite")
+    if(draw_icon_button_tt(&drag_icon,"Select an object") > 0) do pick_sprite_state = .None
+    if(draw_icon_button_tt(&pose_icon,"Save Pose")) > 0 do anim_save_pose(&curr_model, sprites[:])
+    
+    handle_transforms()
 }
 
 anim_model_name := ""

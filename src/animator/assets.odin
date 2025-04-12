@@ -2,7 +2,8 @@ package animator
 
 import rl "vendor:raylib"
 
-Sprite :: struct {
+Sprite :: struct 
+{
 	name:     string,
 	src:      rl.Rectangle,
 	dst:      rl.Rectangle,
@@ -15,7 +16,8 @@ curr_model : AnimatedModel
 sprites: [dynamic]Sprite
 
 
-Transform :: struct {
+Transform :: struct 
+{
 	origin:   rl.Vector2,
 	position: rl.Vector2,
 	scale:    rl.Vector2,
@@ -23,14 +25,22 @@ Transform :: struct {
 	pad:      u32,
 }
 
-Model :: struct {
+Model :: struct 
+{
 	name:    string,
 	trans_w: Transform,
 	sprites: [dynamic]Sprite,
 }
 
-AnimatedModel :: struct {
+Pose :: struct{
+	name: string,
+	sprites: [dynamic]Sprite,
+}
+
+AnimatedModel :: struct 
+{
 	model:        Model,
+	poses:        [dynamic]Pose,
 	has_anim:     bool,
 	texture_path: string,
 	//anims : [dynamic]Animation,

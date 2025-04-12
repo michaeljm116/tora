@@ -24,8 +24,9 @@ rot_rect         := rl.Rectangle{pos_rect.x + pos_rect.width, 0, top_size.x, top
 scale_rect       := rl.Rectangle{rot_rect.x + rot_rect.width, 0, top_size.x, top_size.y}
 origin_rect      := rl.Rectangle{scale_rect.x + scale_rect.width, 0, top_size.x, top_size.y}
 show_sprite_rect := rl.Rectangle{origin_rect.x + origin_rect.width, 0, top_size.x, top_size.y}
+pose_rect        := rl.Rectangle{show_sprite_rect.x + show_sprite_rect.width, 0, top_size.x, top_size.y}
 
-viewer_icon        := TopMenuIcon{rect = viewer_rect, active = false, color = rl.WHITE,icon = .ICON_PHOTO_CAMERA}
+viewer_icon      := TopMenuIcon{rect = viewer_rect, active = false, color = rl.WHITE,icon = .ICON_PHOTO_CAMERA}
 save_icon        := TopMenuIcon{rect = save_rect, active = false, color = rl.BLACK,icon = .ICON_FILE_SAVE_CLASSIC}
 load_icon        := TopMenuIcon{rect = load_rect, active = false, color = rl.BLACK,icon = .ICON_FOLDER_FILE_OPEN}
 play_icon        := TopMenuIcon{rect = play_rect, active = false, color = rl.GREEN,icon = .ICON_PLAYER_PLAY}
@@ -37,6 +38,7 @@ rot_icon         := TopMenuIcon{rect = rot_rect, active = false, color = rl.BLUE
 scale_icon       := TopMenuIcon{rect = scale_rect, active = false, color = rl.BLUE,icon = .ICON_SCALE}
 origin_icon      := TopMenuIcon{rect = origin_rect, active = false, color = rl.BLUE, icon = .ICON_TARGET}
 show_sprite_icon := TopMenuIcon{rect = show_sprite_rect, active = false, color = rl.BLACK,icon = .ICON_BOX}
+pose_icon        := TopMenuIcon{rect = pose_rect, active = false, color = rl.BLACK,icon = .ICON_FILE_SAVE}
 
 draw_icon_button :: proc(icon : ^TopMenuIcon, pixel_size := i32(2)) -> i32
 {
