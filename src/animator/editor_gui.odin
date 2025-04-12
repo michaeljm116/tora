@@ -35,7 +35,8 @@ lp_padding : f32 = 4
 lp_spacing : f32 = 24
 lp_template := rl.Rectangle{left_panel.x + lp_padding, top_size.y + lp_padding, left_size - lp_padding * 2, lp_spacing}
 curr_sprite := 0
-
+curr_y := f32(-1.0)
+green_seethrough := rl.Color{ 0, 228, 48, 49}
 draw_left_panel :: proc()
 {
 	rl.DrawRectangleRec(left_panel, rl.GRAY)
@@ -46,9 +47,13 @@ draw_left_panel :: proc()
         if rl.GuiLabelButton(temp_rec, str.clone_to_cstring(s.name)){
             curr_sprite = i
             editing_name = !editing_name
+            curr_y = temp_rec.y
         }
     	temp_rec.y += lp_spacing
 	}
+	if(curr_y >= 0){
+	temp_rec.y = curr_y
+	rl.DrawRectangleRec(temp_rec, green_seethrough)}
 	set_default_gui()
 	if(len(sprites) > 0 && editing_name) do	name_the_sprite(curr_sprite)
 }
@@ -70,7 +75,6 @@ name_the_sprite :: proc(index: int)
 {
     sprite := &sprites[index]
     name_buf := str.clone_to_cstring(sprite.name)
-
     input_rect := rl.Rectangle{
         x = left_panel.x,
         y = window_size.y - 32,
@@ -79,14 +83,6 @@ name_the_sprite :: proc(index: int)
     };
     secret := false
     result := rl.GuiTextBox(input_rect, name_buf, 128, editing_name)
-    /* rl.GuiTextInputBox(input_rect,
-        "Name Sprite",               // title
-        "Enter new sprite name:",    // message
-        "Save",                      // button text
-        name_buf,                    // pointer to the buffer
-        128,                         // maximum text length
-        &secret
-    )*/
 
     if result != true{
         sprite.name = str.clone_from_cstring(name_buf)
@@ -229,8 +225,6 @@ handle_transforms :: proc()
     }
 }
 
-
-
 /// Swap Up, This proc takes a sprite array and its index and does a swap with the previous element
 swap_up :: proc(sprite_array : [dynamic]Sprite, curr_sprite : ^int)
 {
@@ -250,10 +244,3 @@ swap_down :: proc(sprite_array : [dynamic]Sprite, curr_sprite : ^int)
         curr_sprite^ = index + 1
     }
 }
-
-/// Sprite Mouse Detection, if the mouse is over the sprite and the sprite is selected
-/// set that sprite as selected
-sprite_mouse_detection :: proc(sprite_array : [dynamic]Sprite, curr_sprite : ^int)
-{
-}
-
