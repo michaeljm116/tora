@@ -11,6 +11,7 @@ Sprite :: struct {
 	color:    rl.Color,
 	layer:    u8,
 }
+curr_model : AnimatedModel
 sprites: [dynamic]Sprite
 
 

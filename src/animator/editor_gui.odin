@@ -216,6 +216,8 @@ handle_model_loading :: proc()
     {
         temp_model = import_animated_model("assets/Full_Model.json")
         model_loaded = true
+        sprites = make([dynamic]Sprite, len(temp_model.model.sprites))
+        copy(sprites[:], temp_model.model.sprites[:])
     }
 }
 
