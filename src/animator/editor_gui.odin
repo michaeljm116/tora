@@ -2,7 +2,7 @@ package animator
 
 import rl "vendor:raylib"
 import str "core:strings"
-
+import ex "../extensions"
 // Global Constants
 top_size := rl.Vector2{32, 32}
 bot_size := f32(100)
@@ -37,24 +37,40 @@ lp_template := rl.Rectangle{left_panel.x + lp_padding, top_size.y + lp_padding, 
 curr_sprite := 0
 curr_y := f32(-1.0)
 green_seethrough := rl.Color{ 0, 228, 48, 49}
+
 draw_left_panel :: proc()
 {
+    // Draw the background
 	rl.DrawRectangleRec(left_panel, rl.GRAY)
 	temp_rec := lp_template
 	set_size_and_color(i32(lp_spacing), I32COLOR_WHITE)
+
+	//For each sprite, show the name
+	//If name is clicked, set that to curr_sprite
 	for s, i in sprites
 	{
         if rl.GuiLabelButton(temp_rec, str.clone_to_cstring(s.name)){
             curr_sprite = i
-            editing_name = !editing_name
+            editing_name = false
             curr_y = temp_rec.y
         }
     	temp_rec.y += lp_spacing
 	}
+	// Highlight the current sprite
 	if(curr_y >= 0){
-	temp_rec.y = curr_y
-	rl.DrawRectangleRec(temp_rec, green_seethrough)}
+    	temp_rec.y = curr_y
+    	rl.DrawRectangleRec(temp_rec, green_seethrough)
+	}
+
+	// Reset the defaults
 	set_default_gui()
+
+	// edit the name if... curr_sprite is rightclicked
+	if(ex.rl_right_clicked(temp_rec) == 2){
+	   editing_name = true
+	}
+	if(rl.IsKeyPressed(.ENTER)){editing_name = false}
+
 	if(len(sprites) > 0 && editing_name) do	name_the_sprite(curr_sprite)
 }
 
@@ -116,7 +132,7 @@ draw_file_menu :: proc()
     draw_icon_button_tt(&show_sprite_icon,"Show Box around sprite")
     if(draw_icon_button_tt(&drag_icon,"Select an object") > 0) do pick_sprite_state = .None
     if(draw_icon_button_tt(&pose_icon,"Save Pose")) > 0 do anim_save_pose(&curr_model, sprites[:])
-    
+
     handle_transforms()
 }
 

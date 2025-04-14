@@ -40,12 +40,12 @@ origin_icon      := TopMenuIcon{rect = origin_rect, active = false, color = rl.B
 show_sprite_icon := TopMenuIcon{rect = show_sprite_rect, active = false, color = rl.BLACK,icon = .ICON_BOX}
 pose_icon        := TopMenuIcon{rect = pose_rect, active = false, color = rl.BLACK,icon = .ICON_FILE_SAVE}
 
-draw_icon_button :: proc(icon : ^TopMenuIcon, pixel_size := i32(2)) -> i32
+draw_icon_button :: proc(icon : ^TopMenuIcon, pixel_size := i32(2)) -> int
 {
     prev_active := icon^.active
     rl.GuiToggle(icon.rect, "", &icon.active)
     active := bool(icon^.active)
-    ret := i32(prev_active != active)
+    ret := int(prev_active != active)
 
     color := active?  icon.color : rl.GRAY
 
@@ -55,7 +55,7 @@ draw_icon_button :: proc(icon : ^TopMenuIcon, pixel_size := i32(2)) -> i32
 
 tooltip_active := true
 tooltip_text : cstring = ""
-draw_icon_button_tt :: proc(icon : ^TopMenuIcon, tooltip: cstring, pixel_size := i32(2)) -> i32
+draw_icon_button_tt :: proc(icon : ^TopMenuIcon, tooltip: cstring, pixel_size := i32(2)) -> int
 {
     ret := draw_icon_button(icon, pixel_size)
     mouse_pos := rl.GetMousePosition()

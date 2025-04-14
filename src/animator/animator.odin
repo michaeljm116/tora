@@ -1,6 +1,7 @@
 package animator
 
-import rl"vendor:raylib"
+import rl "vendor:raylib"
+import ex "../extensions"
 
 /*
 COMPARES THESE 4 things from sprite:
@@ -35,7 +36,7 @@ anim_save_pose :: proc(model : ^AnimatedModel, pose_sprites : []Sprite){
     }
     append(&model.poses, pose)
     model.has_anim = true
-    
+
 }
 
 /*
