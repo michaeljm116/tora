@@ -1,0 +1,18 @@
+# Compiled executables
+*.exe
+
+# Build folder
+build/
+
+# Intermediate build files (if applicable)
+*.o
+*.obj
+*.d
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Other temporary files (if any)
+*.tmp
+*.log

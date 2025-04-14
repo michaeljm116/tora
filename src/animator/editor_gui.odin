@@ -38,12 +38,21 @@ curr_sprite := 0
 curr_y := f32(-1.0)
 green_seethrough := rl.Color{ 0, 228, 48, 49}
 
+model_name := "New Model"
+editing_model_name := false
 draw_left_panel :: proc()
 {
     // Draw the background
 	rl.DrawRectangleRec(left_panel, rl.GRAY)
 	temp_rec := lp_template
 	set_size_and_color(i32(lp_spacing), I32COLOR_WHITE)
+
+	//First show the model name
+	if(rl.GuiLabelButton(temp_rec, str.clone_to_cstring(model_name))){
+	   curr_y = temp_rec.y
+	}
+	if(ex.rl_right_clicked(temp_rec) == 2) do editing_model_name = true
+	temp_rec.y += lp_spacing
 
 	//For each sprite, show the name
 	//If name is clicked, set that to curr_sprite
@@ -69,9 +78,13 @@ draw_left_panel :: proc()
 	if(ex.rl_right_clicked(temp_rec) == 2){
 	   editing_name = true
 	}
-	if(rl.IsKeyPressed(.ENTER)){editing_name = false}
+	if(rl.IsKeyPressed(.ENTER)){
+        editing_name = false
+        editing_model_name = false
+	}
 
 	if(len(sprites) > 0 && editing_name) do	name_the_sprite(curr_sprite)
+	if(editing_model_name ) do name_it(&model_name)
 }
 
 // change layer order,
@@ -102,6 +115,23 @@ name_the_sprite :: proc(index: int)
 
     if result != true{
         sprite.name = str.clone_from_cstring(name_buf)
+    }
+}
+
+name_it :: proc(name : ^string)
+{
+    name_buf := str.clone_to_cstring(name^)
+    input_rect := rl.Rectangle{
+        x = left_panel.x,
+        y = window_size.y - 32,
+        width = left_panel.width,
+        height = 32,
+    };
+    secret := false
+    result := rl.GuiTextBox(input_rect, name_buf, 128, editing_model_name)
+
+    if result != true{
+        name^ = str.clone_from_cstring(name_buf)
     }
 }
 
@@ -136,33 +166,12 @@ draw_file_menu :: proc()
     handle_transforms()
 }
 
-anim_model_name := ""
 handle_save_menu :: proc()
 {
     if(save_icon.active){
-        //if anim_model_name == ""
-        {
-            secret := false
-            name_buf := str.clone_to_cstring(anim_model_name)
-            input_rect := rl.Rectangle{
-                x = left_panel.x,
-                y = 132,
-                width = left_panel.width,
-                height = 132,
-            }
-            rl.GuiTextInputBox(input_rect,
-                "Name Sprite",               // title
-                "Enter new sprite name:",    // message
-                "Save",                      // button text
-                name_buf,                    // pointer to the buffer
-                128,                         // maximum text length
-                &secret
-            )
-            anim_model_name = str.clone_from_cstring(name_buf)
-        }
         anim_model := AnimatedModel{
             model = {
-                name = "model",
+                name = model_name,
                 trans_w = {
                     scale = {1,1}
                 },
