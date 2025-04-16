@@ -6,7 +6,7 @@ import "core:os"
 import "core:strings"
 
 
-save_animated_model :: proc(anim_model : AnimatedModel)
+save_animated_model :: proc(anim_model : ^AnimatedModel)
 {
     opt : json.Marshal_Options = {pretty = true}
     data, err := json.marshal(anim_model, opt)

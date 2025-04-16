@@ -20,8 +20,8 @@ render :: proc(txtr: rl.Texture2D) {
 	rl.GuiPanel(right_window, right_window_text[window_text_index])
 
 	if(!viewer_icon.active) do draw_texture(txtr)
-	else do draw_model(temp_model, txtr)
-	for s in sprites {
+	else do draw_model(model_viewer, txtr)
+	for s in model_creator.model.sprites {
 		rl.DrawTexturePro(txtr, s.src, s.dst, s.origin, s.rotation, rl.WHITE)
 		if(show_sprite_icon.active){
 		  rl.DrawRectangleLinesEx(s.dst, 4, rl.BLACK)

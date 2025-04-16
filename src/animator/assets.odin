@@ -2,6 +2,15 @@ package animator
 
 import rl "vendor:raylib"
 
+
+//curr_model : AnimatedModel
+//sprites: [dynamic]Sprite
+
+model_creator : AnimatedModel
+model_viewer : AnimatedModel
+anim_creator : AnimatedModel
+anim_viewer : AnimatedModel
+
 Sprite :: struct 
 {
 	name:     string,
@@ -12,9 +21,6 @@ Sprite :: struct
 	color:    rl.Color,
 	layer:    u8,
 }
-curr_model : AnimatedModel
-sprites: [dynamic]Sprite
-
 
 Transform :: struct 
 {

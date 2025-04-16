@@ -38,17 +38,18 @@ curr_sprite := 0
 curr_y := f32(-1.0)
 green_seethrough := rl.Color{ 0, 228, 48, 49}
 
-model_name := "New Model"
+//model_name := "New Model"
 editing_model_name := false
-draw_left_panel :: proc()
+draw_left_panel :: proc(anim_model : AnimatedModel)
 {
+    using anim_model.model
     // Draw the background
 	rl.DrawRectangleRec(left_panel, rl.GRAY)
 	temp_rec := lp_template
 	set_size_and_color(i32(lp_spacing), I32COLOR_WHITE)
 
 	//First show the model name
-	if(rl.GuiLabelButton(temp_rec, str.clone_to_cstring(model_name))){
+	if(rl.GuiLabelButton(temp_rec, str.clone_to_cstring(name))){
 	   curr_y = temp_rec.y
 	}
 	if(ex.rl_right_clicked(temp_rec) == 2) do editing_model_name = true
@@ -83,15 +84,16 @@ draw_left_panel :: proc()
         editing_model_name = false
 	}
 
-	if(len(sprites) > 0 && editing_name) do	name_the_sprite(curr_sprite)
-	if(editing_model_name ) do name_it(&model_name)
+	if(len(sprites) > 0 && editing_name) do	name_the_sprite(sprites[:], curr_sprite)
+	if(editing_model_name ) do name_it(&name)
 }
 
 // change layer order,
 // if the number of sprites is greater than 1 poll for user input of either up or down if up then swap the array elements up and vv
 // if down then swap the array elements down and vv
-change_layer_order :: proc()
+change_layer_order :: proc(anim_model : ^AnimatedModel)
 {
+    using anim_model.model
     if len(sprites) > 1
     {
         if rl.IsKeyPressed(.UP) do swap_up(sprites, &curr_sprite)
@@ -100,7 +102,7 @@ change_layer_order :: proc()
 }
 
 editing_name := false
-name_the_sprite :: proc(index: int)
+name_the_sprite :: proc(sprites : []Sprite, index: int)
 {
     sprite := &sprites[index]
     name_buf := str.clone_to_cstring(sprite.name)
@@ -163,25 +165,14 @@ draw_file_menu :: proc()
     if(draw_icon_button_tt(&drag_icon,"Select an object") > 0) do pick_sprite_state = .None
     if(draw_icon_button_tt(&pose_icon,"Save Pose")) > 0 do anim_save_pose(&curr_model, sprites[:])
 
-    handle_transforms()
+    handle_transforms(&model_creator)
 }
 
-handle_save_menu :: proc()
+handle_save_menu :: proc(anim_model : ^AnimatedModel)
 {
     if(save_icon.active){
-        anim_model := AnimatedModel{
-            model = {
-                name = model_name,
-                trans_w = {
-                    scale = {1,1}
-                },
-                sprites = sprites
-            },
-            has_anim = false,
-            texture_path = "assets/animation-test.png"
-        }
-
-        for &s in sprites{
+        anim_model.texture_path = "assets/animation-test.png"
+        for s in anim_model.model.sprites{
             s.dst.x -= right_window.x
         }
         save_animated_model(anim_model)
@@ -190,20 +181,21 @@ handle_save_menu :: proc()
 }
 
 model_loaded := false
-temp_model : AnimatedModel
 handle_model_loading :: proc()
 {
     if(viewer_icon.active && !model_loaded)
     {
-        temp_model = import_animated_model("assets/Full_Model.json")
+        model_viewer = import_animated_model("assets/Full_Model.json")
         model_loaded = true
-        sprites = make([dynamic]Sprite, len(temp_model.model.sprites))
-        copy(sprites[:], temp_model.model.sprites[:])
+        anim_creator = model_viewer
+        //sprites = make([dynamic]Sprite, len(model_viewer.model.sprites))
+        //copy(sprites[:], model_viewer.model.sprites[:])
     }
 }
 
-handle_transforms :: proc()
+handle_transforms :: proc(anim_model : ^AnimatedModel)
 {
+    using anim_model.model
     if(draw_icon_button_tt(&pos_icon, "Translate Sprite") > 0){
         rot_icon.active, scale_icon.active, origin_icon.active = false, false, false
     }
