@@ -10,7 +10,6 @@ import anim "animator"
 import ex "extensions"
 import str "core:strings"
 
-left_panel := rl.Rectangle{0, 0, left_size, window_size.y}
 lp_padding : f32 = 4
 lp_spacing : f32 = 24
 lp_template := rl.Rectangle{left_panel.x + lp_padding, top_size.y + lp_padding, left_size - lp_padding * 2, lp_spacing}
@@ -18,9 +17,8 @@ curr_sprite := 0
 curr_y := f32(-1.0)
 green_seethrough := rl.Color{ 0, 228, 48, 49}
 
-//model_name := "New Model"
 editing_model_name := false
-draw_left_panel :: proc(anim_model : anim.Model)
+draw_left_panel :: proc(anim_model : ^anim.Model)
 {
     using anim_model
     // Draw the background
@@ -69,7 +67,9 @@ draw_left_panel :: proc(anim_model : anim.Model)
 }
 
 // change layer order,
-// if the number of sprites is greater than 1 poll for user input of either up or down if up then swap the array elements up and vv
+// if the number of sprites is greater than 1 
+// then poll for user input of either up or down if up 
+// then swap the array elements up and vv
 // if down then swap the array elements down and vv
 change_layer_order :: proc(anim_model : ^anim.Model)
 {

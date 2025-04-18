@@ -9,11 +9,12 @@ import str "core:strings"
 import ex "extensions"
 import anim "animator"
 
+
 draw_top_panel :: proc()
 {
 	rl.DrawRectangleRec(top_panel, rl.DARKGRAY)
 	draw_file_menu()
-	handle_save_menu()
+	handle_save_menu(&model_creator)
 	handle_model_loading()
 }
 
@@ -31,7 +32,7 @@ draw_file_menu :: proc()
     draw_icon_button(&stop_icon)
     draw_icon_button_tt(&show_sprite_icon,"Show Box around sprite")
     if(draw_icon_button_tt(&drag_icon,"Select an object") > 0) do pick_sprite_state = .None
-    if(draw_icon_button_tt(&pose_icon,"Save Pose")) > 0 do anim.save_pose(&curr_model, sprites[:])
+    if(draw_icon_button_tt(&pose_icon,"Save Pose")) > 0 do anim.save_pose(&model_viewer, &curr_pose)
 
     handle_transforms(&model_creator)
 }
@@ -40,7 +41,7 @@ handle_save_menu :: proc(anim_model : ^anim.Model)
 {
     if(save_icon.active){
         anim_model.texture_path = "assets/animation-test.png"
-        for s in anim_model.sprites{
+        for &s in anim_model.sprites{
             s.dst.x -= right_window.x
         }
         anim.save_model(anim_model)

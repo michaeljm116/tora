@@ -2,15 +2,6 @@ package animator
 
 import rl "vendor:raylib"
 
-
-//curr_model : anim.Model
-//sprites: [dynamic]Sprite
-
-model_creator : Model
-model_viewer : Model
-anim_creator : Model
-anim_viewer : Model
-
 Sprite :: struct
 {
 	name:     string,

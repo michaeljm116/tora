@@ -8,7 +8,7 @@ right_window_text := []cstring{"Model View" , "Animation View"}
 draw_right_window :: proc()
 {
     rl.GuiPanel(right_window, right_window_text[window_text_index])
-	for s in model_creator.model.sprites {
+	for s in model_creator.sprites {
 		rl.DrawTexturePro(txtr, s.src, s.dst, s.origin, s.rotation, rl.WHITE)
 		if(show_sprite_icon.active){
 		  rl.DrawRectangleLinesEx(s.dst, 4, rl.BLACK)

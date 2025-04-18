@@ -27,16 +27,15 @@ and if any of them have changed
 copy the dst to the src
 also name the pose... which would require a text box to enter the name
 */
-save_pose :: proc(model : ^Model, pose_sprites : []Sprite){
+save_pose :: proc(model : ^Model, pose : ^Pose){
     pose : Pose
-    for &ps, i in pose_sprites {
+    for ps, i in pose.sprites {
         if sprite_changed(model.sprites[i], ps){
            append(&pose.sprites,ps)
         }
     }
     append(&model.poses, pose)
     model.has_anim = true
-
 }
 
 /*

@@ -6,33 +6,27 @@ import "core:encoding/json"
 import "core:fmt"
 import anim "animator"
 
-test_texture : rl.Texture2D
-test_sprite : Sprite
-test_pose : Pose
-
 main :: proc()
 {
     //begin scene
     //rl.SetConfigFlags({rl.ConfigFlag.WINDOW_UNDECORATED})
-    rl.InitWindow(i32(anim.window_size.x), i32(anim.window_size.y), "TwoD Odin Raylib Animator")
+    rl.InitWindow(i32(window_size.x), i32(window_size.y), "TwoD Odin Raylib Animator")
     rl.SetTargetFPS(120)
-    anim.init_default_gui()
+    init_default_style()
 
-    test_texture = rl.LoadTexture("assets/animation-test.png")
+    txtr = rl.LoadTexture("assets/animation-test.png")
 
     for(!rl.WindowShouldClose())
     {
         //update scene
-        anim.update_editor_gui()
+        update_editor_gui()
 
         rl.BeginDrawing()
         rl.ClearBackground(rl.DARKGRAY)
         rl.GuiEnable()
 
-        anim.draw_editor_gui()
-        //animate(&test_sprite, test_pose)
-        //draw_sprite(test_sprite)
-        anim.render(test_texture)
+        draw_editor_gui()
+        
 
         rl.EndDrawing()
     }
@@ -81,7 +75,8 @@ main :: proc()
         model_data.sprites[i] := Sprite{}
     }
 
-}*/
+}
+
 
 ModelData :: struct
 {
@@ -185,3 +180,4 @@ render :: proc()
 
     rl.DrawTexturePro(test_texture, src, dst, origin, 0, rl.WHITE)
 }
+*/

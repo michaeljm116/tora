@@ -3,7 +3,7 @@ package main
 import rl "vendor:raylib"
 import "core:fmt"
 import "core:strings"
-
+import anim "animator"
 b_select_sprite := false
 pick_sprite_state := PickSpriteState.None
 offset : rl.Vector2
@@ -21,7 +21,7 @@ PickSpriteState :: enum {
 	DragBox
 }
 
-select_sprite :: proc(txtr: rl.Texture2D, sprites : []Sprite) {
+select_sprite :: proc(txtr: rl.Texture2D, model : ^anim.Model) {
 	mouse_pos := rl.GetMousePosition()
 	switch (pick_sprite_state)
 	{
@@ -82,10 +82,10 @@ select_sprite :: proc(txtr: rl.Texture2D, sprites : []Sprite) {
 		src,dst := draw_rect_lines_w_sprite(txtr, mouse_pos - offset, {sprite_rect.width, sprite_rect.height})
 		if(rl.IsMouseButtonPressed(.LEFT)){
 			if(is_in_window(mouse_pos - offset, right_window)){
-				sprite := Sprite{src = src, dst = dst}
+				sprite := anim.Sprite{src = src, dst = dst}
 				//optimize_sprite(&sprite, txtr)
-				sprite.name = fmt.tprintf("New Sprite(%i)", len(sprites))
-				append(sprites^, sprite)
+				sprite.name = fmt.tprintf("New Sprite(%i)", len(model.sprites))
+				append(&model.sprites, sprite)
 				pick_sprite_state = .None
 			}
 			else{
@@ -126,7 +126,7 @@ window_clamp_opt :: proc(mouse_pos: rl.Vector2, window: rl.Rectangle) -> rl.Vect
 	return ret
 }
 
-optimize_sprite :: proc(sprite: ^Sprite, texture: rl.Texture2D) {
+optimize_sprite :: proc(sprite: ^anim.Sprite, texture: rl.Texture2D) {
     // Load texture image data
     img := rl.LoadImageFromTexture(texture)
     pixels := rl.LoadImageColors(img)
@@ -183,3 +183,34 @@ optimize_sprite :: proc(sprite: ^Sprite, texture: rl.Texture2D) {
     rl.UnloadImage(img)
 }
 
+
+
+draw_dot :: proc(position: rl.Vector2) {
+	rl.DrawCircle(i32(position.x), i32(position.y), 4, rl.LIME)
+}
+draw_transparent :: proc(first, second: rl.Vector2) {
+	rect := rl.Rectangle{first.x, first.y, second.x - first.x, second.y - first.y}
+	rl.DrawRectanglePro(rect, {0, 0}, 0, rl.Color{25, 125, 125, 50})
+}
+draw_rect_lines :: proc(first, second: rl.Vector2) {
+	rect := rl.Rectangle{first.x, first.y, second.x - first.x, second.y - first.y}
+	rl.DrawRectangleLinesEx(rect, 4, rl.SKYBLUE)
+}
+
+draw_rect_lines_w_sprite :: proc(txtr: rl.Texture2D, pos, size: rl.Vector2) -> (rl.Rectangle,rl.Rectangle)
+{
+	ratio := rl.Vector2 {
+		f32(txtr.width) / left_window.width,
+		f32(txtr.height) / left_window.height,
+	} //very unoptimal
+	src := rl.Rectangle {
+		(rect_start.x - left_window.x) * ratio.x,
+		(rect_start.y - left_window.y) * ratio.y,
+		size.x * ratio.x,
+		size.y * ratio.y,
+	}
+	dst := rl.Rectangle{pos.x, pos.y, size.x, size.y}
+	rl.DrawTexturePro(txtr, src, dst, {0, 0}, 0, rl.WHITE)
+	rl.DrawRectangleLinesEx(dst, 4, rl.SKYBLUE)
+	return src, dst
+}
