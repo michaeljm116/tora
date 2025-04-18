@@ -1,4 +1,4 @@
-package animator
+package main
 
 import rl "vendor:raylib"
 import "core:fmt"
@@ -21,7 +21,7 @@ PickSpriteState :: enum {
 	DragBox
 }
 
-select_sprite :: proc(txtr: rl.Texture2D) {
+select_sprite :: proc(txtr: rl.Texture2D, sprites : []Sprite) {
 	mouse_pos := rl.GetMousePosition()
 	switch (pick_sprite_state)
 	{
@@ -85,7 +85,7 @@ select_sprite :: proc(txtr: rl.Texture2D) {
 				sprite := Sprite{src = src, dst = dst}
 				//optimize_sprite(&sprite, txtr)
 				sprite.name = fmt.tprintf("New Sprite(%i)", len(sprites))
-				append(&sprites, sprite)
+				append(sprites^, sprite)
 				pick_sprite_state = .None
 			}
 			else{

@@ -1,4 +1,4 @@
-package animator
+package main
 import rl "vendor:raylib"
 
 TopMenuIcon :: struct{
@@ -12,7 +12,7 @@ place_icon_next_to :: proc(icon : ^TopMenuIcon, prev_rect : rl.Rectangle, is_rig
     icon.rect = { prev_rect.x + prev_rect.width, prev_rect.y, prev_rect.width, prev_rect.height}
 }
 
-viewer_rect        := rl.Rectangle{0,0,top_size.x * 2, top_size.y}
+viewer_rect      := rl.Rectangle{0,0,top_size.x * 2, top_size.y}
 save_rect        := rl.Rectangle{viewer_rect.x + viewer_rect.width, 0, top_size.x, top_size.y}
 load_rect        := rl.Rectangle{save_rect.x + save_rect.width, 0, top_size.x, top_size.y}
 play_rect        := rl.Rectangle{load_rect.x + load_rect.width,0, top_size.x, top_size.y}

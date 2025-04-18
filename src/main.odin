@@ -12,58 +12,26 @@ test_pose : Pose
 
 main :: proc()
 {
-    //load the json
-    data, ok := os.read_entire_file_from_filename("assets/test_model.json")
-    if !ok{
-        fmt.eprintln("Failed to load the file!")
-        return
-    }
-    defer delete(data)
-
-    // parse the json
-    json_data, err := json.parse(data)
-    if err != .None{
-        fmt.eprintln("Failed to parse the json file.")
-        fmt.eprintln("Error:", err)
-        return
-    }
-    defer json.destroy_value(json_data)
-
-    // access the data
-    root := json_data.(json.Object)
-    fmt.println("name",
-        root["name"],
-        "num_parts:",
-        root["num_parts"]
-    )
-    num_parts := root["num_parts"]
-    rects : [dynamic]rl.Rectangle
-    for pa in root["parts"].(json.Array)
-    {
-        p := pa.(json.Array)
-        name := p[0]
-        layer := i32(p[1].(json.Float))
-        rect := rl.Rectangle{f32(p[2].(json.Float)),f32(p[3].(json.Float)),f32(p[4].(json.Float)),f32(p[5].(json.Float))}
-        append(&rects, rect)
-    }
-
     //begin scene
     //rl.SetConfigFlags({rl.ConfigFlag.WINDOW_UNDECORATED})
-    rl.InitWindow(i32(anim.window_size.x), i32(anim.window_size.y), "2D Odin Raylib Animator")
+    rl.InitWindow(i32(anim.window_size.x), i32(anim.window_size.y), "TwoD Odin Raylib Animator")
     rl.SetTargetFPS(120)
+    anim.init_default_gui()
 
     test_texture = rl.LoadTexture("assets/animation-test.png")
-    test_sprite = Sprite{{256,256}, {205,211}, {30,40}, {205,211}, {2,2}, {102.5, 105.5}, 0, "head", 0}
-    test_pose = Pose{{512,512}, {3,3}, {102.5,105.5}, 90, "head", 1}
 
     for(!rl.WindowShouldClose())
     {
+        //update scene
+        anim.update_editor_gui()
+
         rl.BeginDrawing()
         rl.ClearBackground(rl.DARKGRAY)
+        rl.GuiEnable()
 
+        anim.draw_editor_gui()
         //animate(&test_sprite, test_pose)
         //draw_sprite(test_sprite)
-        anim.init_default_gui()
         anim.render(test_texture)
 
         rl.EndDrawing()

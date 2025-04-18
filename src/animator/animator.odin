@@ -11,7 +11,7 @@ COMPARES THESE 4 things from sprite:
 	color:    rl.Color,
 If any chagnes, return true
 */
-anim_sprite_changed :: proc(src, dst : Sprite) -> bool {
+sprite_changed :: proc(src, dst : Sprite) -> bool {
     src_rect := src.dst
     dst_rect := dst.dst
     if src_rect.x != dst_rect.x || src_rect.y != dst_rect.y || src_rect.width != dst_rect.width || src_rect.height != dst_rect.height do return true
@@ -27,10 +27,10 @@ and if any of them have changed
 copy the dst to the src
 also name the pose... which would require a text box to enter the name
 */
-anim_save_pose :: proc(model : ^AnimatedModel, pose_sprites : []Sprite){
+save_pose :: proc(model : ^Model, pose_sprites : []Sprite){
     pose : Pose
     for &ps, i in pose_sprites {
-        if anim_sprite_changed(model.model.sprites[i], ps){
+        if sprite_changed(model.sprites[i], ps){
            append(&pose.sprites,ps)
         }
     }
@@ -43,9 +43,9 @@ anim_save_pose :: proc(model : ^AnimatedModel, pose_sprites : []Sprite){
 Take a screenshot of the pose and make a small image of it
 The pose is on the right-window so just render it to a texture
 */
-anim_create_pose_ss :: proc(model : AnimatedModel, texture : rl.Texture2D, ss_size : rl.Vector2) -> rl.Texture2D {
+create_pose_ss :: proc(model : Model, texture : rl.Texture2D, ss_size : rl.Vector2, window : rl.Rectangle) -> rl.Texture2D {
 
-    rt := rl.LoadRenderTexture(i32(right_window.width), i32(right_window.height))
+    rt := rl.LoadRenderTexture(i32(window.width), i32(window.height))
 
     rl.BeginTextureMode(rt)
     {

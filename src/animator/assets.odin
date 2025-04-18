@@ -3,15 +3,15 @@ package animator
 import rl "vendor:raylib"
 
 
-//curr_model : AnimatedModel
+//curr_model : anim.Model
 //sprites: [dynamic]Sprite
 
-model_creator : AnimatedModel
-model_viewer : AnimatedModel
-anim_creator : AnimatedModel
-anim_viewer : AnimatedModel
+model_creator : Model
+model_viewer : Model
+anim_creator : Model
+anim_viewer : Model
 
-Sprite :: struct 
+Sprite :: struct
 {
 	name:     string,
 	src:      rl.Rectangle,
@@ -22,7 +22,7 @@ Sprite :: struct
 	layer:    u8,
 }
 
-Transform :: struct 
+Transform :: struct
 {
 	origin:   rl.Vector2,
 	position: rl.Vector2,
@@ -31,23 +31,18 @@ Transform :: struct
 	pad:      u32,
 }
 
-Model :: struct 
-{
-	name:    string,
-	trans_w: Transform,
-	sprites: [dynamic]Sprite,
-}
-
 Pose :: struct{
 	name: string,
 	sprites: [dynamic]Sprite,
 }
 
-AnimatedModel :: struct 
+Model :: struct
 {
-	model:        Model,
+    name:         string,
+	sprites:      [dynamic]Sprite,
 	poses:        [dynamic]Pose,
 	has_anim:     bool,
 	texture_path: string,
+	trans_w: Transform
 	//anims : [dynamic]Animation,
 }
