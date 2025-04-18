@@ -4,6 +4,7 @@ import math "core:math/linalg"
 import "core:os"
 import "core:encoding/json"
 import "core:fmt"
+import "core:strings"
 import anim "animator"
 
 main :: proc()
@@ -14,8 +15,10 @@ main :: proc()
     rl.SetTargetFPS(120)
     init_default_style()
 
+    
+    recent_texture_path := load_recent_texture("../config.ini")
     txtr = rl.LoadTexture("assets/animation-test.png")
-
+    
     for(!rl.WindowShouldClose())
     {
         //update scene
@@ -31,6 +34,29 @@ main :: proc()
         rl.EndDrawing()
     }
 }
+
+load_recent_texture :: proc(path: string) -> string {
+    data, ok := os.read_entire_file(path)
+    if !ok {
+        fmt.eprintln("Config file not found:", path)
+        return ""
+    }
+    defer delete(data)
+    
+    content := string(data)
+    lines := strings.split(content, "\n")
+    for line in lines {
+        trimmed := strings.trim_space(line)
+        if strings.has_prefix(trimmed, "recent_texture") {
+            parts := strings.split(trimmed, "=")
+            if len(parts) >= 2 {
+                return strings.trim_space(parts[1])
+            }
+        }
+    }
+    return ""
+}
+
 
 /*load_model :: proc(path :cstring) -> (ModelData,bool)
 {

@@ -2,6 +2,105 @@ package animator
 
 import rl "vendor:raylib"
 import ex "../extensions"
+import "core:fmt"
+import "core:os"
+import "core:strings"
+import "core:encoding/json"
+
+//--------------------------------------------------------------------------------------------------------\\
+// ?Assets
+//--------------------------------------------------------------------------------------------------------\\
+Sprite :: struct
+{
+	name:     string,
+	src:      rl.Rectangle,
+	dst:      rl.Rectangle,
+	origin:   rl.Vector2,
+	rotation: f32,
+	color:    rl.Color,
+	layer:    u8,
+}
+
+Transform :: struct
+{
+	origin:   rl.Vector2,
+	position: rl.Vector2,
+	scale:    rl.Vector2,
+	rotation: f32,
+	pad:      u32,
+}
+
+Pose :: struct{
+	name: string,
+	sprites: [dynamic]Sprite,
+}
+
+Model :: struct
+{
+    name:         string,
+	sprites:      [dynamic]Sprite,
+	poses:        [dynamic]Pose,
+	has_anim:     bool,
+	texture_path: string,
+	trans_w: Transform
+	//anims : [dynamic]Animation,
+}
+
+
+//--------------------------------------------------------------------------------------------------------\\
+// ?Draw
+//--------------------------------------------------------------------------------------------------------\\
+draw_model :: proc (model: Model, txtr: rl.Texture2D)
+{
+    trans := model.trans_w
+    for sprite in model.sprites
+    {
+        dst := rl.Rectangle{
+            sprite.dst.x + trans.position.x,
+            sprite.dst.y + trans.position.y,
+            sprite.dst.width * trans.scale.x,
+            sprite.dst.height * trans.scale.y
+        }
+        rl.DrawTexturePro(txtr, sprite.src, dst, sprite.origin, sprite.rotation, rl.WHITE)
+    }
+}
+
+draw_sprite :: proc (sprite : Sprite, txtr: ^rl.Texture2D){
+   rl.DrawTexturePro(txtr^, sprite.src, sprite.dst, sprite.origin, sprite.rotation, sprite.color)
+}
+
+//--------------------------------------------------------------------------------------------------------\\
+// ?Serialize
+//--------------------------------------------------------------------------------------------------------\\
+save_model :: proc(anim_model : ^Model)
+{
+    opt : json.Marshal_Options = {pretty = true}
+    data, err := json.marshal(anim_model, opt)
+    if err != nil{
+        fmt.eprintln("Error marshaling JSON: ", err)
+        return
+    }
+    defer delete(data)
+    name := fmt.tprintf("%s/%s.json","assets/",anim_model.name)
+    os.write_entire_file(name, data)
+}
+
+import_model :: proc(path: string) -> Model {
+    data, ok := os.read_entire_file(path)
+    if !ok {
+        fmt.eprintln("Error reading file")
+        return Model{}
+    }
+    defer delete(data)
+
+    anim_model: Model
+    uerr := json.unmarshal(data, &anim_model)
+    if uerr != nil {
+        fmt.eprintln("Error unmarshaling JSON:", uerr)
+        return Model{}
+    }
+    return anim_model
+}
 
 /*
 COMPARES THESE 4 things from sprite:
