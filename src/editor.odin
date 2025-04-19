@@ -5,11 +5,7 @@ import str "core:strings"
 import ex "extensions"
 import anim "animator"
 import "core:fmt"
-// Global Constants
-bot_size := f32(4)
-left_size := f32(196)
-right_size := f32(4)
-top_size := rl.Vector2{32, 32}
+
 
 model_creator : anim.Model
 model_viewer : anim.Model
@@ -18,9 +14,16 @@ anim_viewer : anim.Model
 curr_pose : anim.Pose
 curr_txtr : rl.Texture2D
 
-window_size := rl.Vector2{1280, 720}
 window_text_index := 0
 view_it := true
+
+EditorState :: enum
+{
+   Model,
+   Pose,
+   Anim
+}
+editor_state : EditorState = .Model
 
 Panels :: struct
 {
@@ -31,7 +34,7 @@ Panels :: struct
 }
 Window :: struct
 {
-   names : [2]cstring,
+   names : [len(EditorState)]cstring,
    using size: rl.Rectangle
 }
 Windows :: struct
@@ -40,20 +43,17 @@ Windows :: struct
    right : Window
 }
 
-
-
 //--------------------------------------------------------------------------------------------------------\\
 // /Main
 //--------------------------------------------------------------------------------------------------------\\
 init_editor_gui :: proc(windows : Windows, panels : Panels)
 {
     // Load config file here:
-    //
     lp_template = rl.Rectangle{panels.left.x + lp_padding, top_size.y + lp_padding, left_size - lp_padding * 2, lp_spacing}
 }
 update_editor_gui :: proc()
 {
-    window_text_index = viewer_icon.active ? 1 : 0
+    window_text_index = int(editor_state)
     change_layer_order(&model_creator)
 }
 
@@ -75,9 +75,11 @@ draw_editor_gui :: proc(windows : Windows, panels : Panels)
 draw_left_window :: proc(windows: Windows)
 {
     rl.GuiPanel(windows.left.size, windows.left.names[window_text_index])
-    if(!viewer_icon.active) do draw_texture(curr_txtr,windows)
-	else do anim.draw_model(model_viewer, curr_txtr)
 
+    #partial switch editor_state{
+        case .Model: draw_texture(curr_txtr, windows)
+        case .Pose: anim.draw_model(model_viewer, curr_txtr)
+    }
 }
 draw_texture :: proc(txtr: rl.Texture2D, windows: Windows)
 {
@@ -93,12 +95,24 @@ draw_texture :: proc(txtr: rl.Texture2D, windows: Windows)
 draw_right_window :: proc(window: Window)
 {
     rl.GuiPanel(window.size, window.names[window_text_index])
-	for s in model_creator.sprites {
-		rl.DrawTexturePro(curr_txtr, s.src, s.local.rect, s.origin, s.rotation, rl.WHITE) //TODO: Investigate: This draws local sprite...
-		if(show_sprite_icon.active){
-		  rl.DrawRectangleLinesEx(s.rect, 4, rl.BLACK)
-		}
-	}
+    #partial switch editor_state
+    {
+        case .Model:
+            for s in model_creator.sprites {
+      		rl.DrawTexturePro(curr_txtr, s.src, s.local.rect, s.origin, s.rotation, rl.WHITE) //TODO: Investigate: This draws local sprite...
+      		if(show_sprite_icon.active){
+        		  rl.DrawRectangleLinesEx(s.rect, 4, rl.BLACK)
+          		}
+           	}
+        case .Pose:
+            for s in curr_pose.sprites{
+                rl.DrawTexturePro(curr_txtr, s.src, s.local.rect, s.origin, s.rotation, rl.WHITE) //TODO: Investigate: This draws local sprite...
+          		if(show_sprite_icon.active){
+        		  rl.DrawRectangleLinesEx(s.rect, 4, rl.BLACK)
+          		}
+            }
+    }
+
 }
 
 //--------------------------------------------------------------------------------------------------------\\
@@ -118,7 +132,7 @@ dropdown_rect := rl.Rectangle{0,0, 128, top_size.y}
 draw_file_menu :: proc()
 {
     rl.GuiSetIconScale(1)
-    draw_icon_button_tt(&viewer_icon, "Switch between Texture and Model viewer")
+    if(draw_icon_button_tt(&mode_icon, "Switch between Texture and Model viewer") > 0) do toggle_mode()
     draw_icon_button(&load_icon)
     draw_icon_button(&save_icon)
     draw_icon_button(&play_icon)
@@ -128,7 +142,22 @@ draw_file_menu :: proc()
     if(draw_icon_button_tt(&drag_icon,"Select an object") > 0) do pick_sprite_state = .None
     if(draw_icon_button_tt(&pose_icon,"Save Pose")) > 0 do anim.save_pose(&model_viewer, &curr_pose)
 
-    handle_transforms(&model_creator)
+    #partial switch editor_state
+    {
+        case .Model:
+            if len(model_creator.sprites) > 0 do handle_transforms(&model_creator.sprites[curr_sprite])
+        case .Pose:
+            if len(curr_pose.sprites) > 0 do handle_transforms(&curr_pose.sprites[curr_sprite])
+    }
+}
+
+toggle_mode :: proc()
+{
+    #partial switch editor_state
+    {
+        case .Model: editor_state = .Pose
+        case .Pose: editor_state = .Model
+    }
 }
 
 handle_save_menu :: proc(anim_model : ^anim.Model, right_window : Window)
@@ -146,19 +175,18 @@ handle_save_menu :: proc(anim_model : ^anim.Model, right_window : Window)
 model_loaded := false
 handle_model_loading :: proc()
 {
-    if(viewer_icon.active && !model_loaded)
+    if(editor_state == .Pose && !model_loaded)
     {
         model_viewer = anim.import_model("assets/Full_Model.json")
         model_loaded = true
         anim_creator = model_viewer
-        //sprites = make([dynamic]Sprite, len(model_viewer.model.sprites))
-        //copy(sprites[:], model_viewer.model.sprites[:])
+        curr_pose.sprites = make([dynamic]anim.Sprite, len(model_viewer.sprites))
+        copy(curr_pose.sprites[:], model_viewer.sprites[:])
     }
 }
 
-handle_transforms :: proc(anim_model : ^anim.Model)
+handle_transforms :: proc(sprite : ^anim.Sprite)
 {
-    using anim_model
     if(draw_icon_button_tt(&pos_icon, "Translate Sprite") > 0){
         rot_icon.active, scale_icon.active, origin_icon.active = false, false, false
     }
@@ -171,36 +199,36 @@ handle_transforms :: proc(anim_model : ^anim.Model)
     else if(draw_icon_button_tt(&origin_icon, "Change Origin") > 0){
         pos_icon.active, rot_icon.active, scale_icon.active = false, false, false
     }
+    transform_sprite(sprite)
+}
 
-    if(len(sprites) > 0)
+transform_sprite :: proc (sprite : ^anim.Sprite)
+{
+    if(pos_icon.active)
     {
-        sprite := &sprites[curr_sprite]
-        if(pos_icon.active)
-        {
-            if(rl.IsKeyDown(.W)){sprite.local.position.y -= 1}
-            if(rl.IsKeyDown(.S)){sprite.local.position.y += 1}
-            if(rl.IsKeyDown(.A)){sprite.local.position.x -= 1}
-            if(rl.IsKeyDown(.D)){sprite.local.position.x += 1}
-        }
-        if(rot_icon.active){
-            if(rl.IsKeyDown(.A)){sprite.local.rotation -= 1}
-            if(rl.IsKeyDown(.D)){sprite.local.rotation += 1}
-        }
-        if(scale_icon.active)
-        {
-            if(rl.IsKeyDown(.W)){sprite.local.scale.y -= 1}
-            if(rl.IsKeyDown(.S)){sprite.local.scale.y += 1}
-            if(rl.IsKeyDown(.A)){sprite.local.scale.x -= 1}
-            if(rl.IsKeyDown(.D)){sprite.local.scale.x += 1}
-        }
-        if(origin_icon.active)
-        {
-            rl.DrawCircle(i32(sprite.local.position.x + sprite.local.origin.x), i32(sprite.local.position.y + sprite.local.origin.y), 5, rl.BLACK)
-            if(rl.IsKeyDown(.W)){sprite.local.origin.y -= 1}
-            if(rl.IsKeyDown(.S)){sprite.local.origin.y += 1}
-            if(rl.IsKeyDown(.A)){sprite.local.origin.x -= 1}
-            if(rl.IsKeyDown(.D)){sprite.local.origin.x += 1}
-        }
+        if(rl.IsKeyDown(.W)){sprite.local.position.y -= 1}
+        if(rl.IsKeyDown(.S)){sprite.local.position.y += 1}
+        if(rl.IsKeyDown(.A)){sprite.local.position.x -= 1}
+        if(rl.IsKeyDown(.D)){sprite.local.position.x += 1}
+    }
+    if(rot_icon.active){
+        if(rl.IsKeyDown(.A)){sprite.local.rotation -= 1}
+        if(rl.IsKeyDown(.D)){sprite.local.rotation += 1}
+    }
+    if(scale_icon.active)
+    {
+        if(rl.IsKeyDown(.W)){sprite.local.scale.y -= 1}
+        if(rl.IsKeyDown(.S)){sprite.local.scale.y += 1}
+        if(rl.IsKeyDown(.A)){sprite.local.scale.x -= 1}
+        if(rl.IsKeyDown(.D)){sprite.local.scale.x += 1}
+    }
+    if(origin_icon.active)
+    {
+        rl.DrawCircle(i32(sprite.local.position.x + sprite.local.origin.x), i32(sprite.local.position.y + sprite.local.origin.y), 5, rl.BLACK)
+        if(rl.IsKeyDown(.W)){sprite.local.origin.y -= 1}
+        if(rl.IsKeyDown(.S)){sprite.local.origin.y += 1}
+        if(rl.IsKeyDown(.A)){sprite.local.origin.x -= 1}
+        if(rl.IsKeyDown(.D)){sprite.local.origin.x += 1}
     }
 }
 //--------------------------------------------------------------------------------------------------------\\
@@ -364,7 +392,7 @@ origin_rect      := rl.Rectangle{scale_rect.x + scale_rect.width, 0, top_size.x,
 show_sprite_rect := rl.Rectangle{origin_rect.x + origin_rect.width, 0, top_size.x, top_size.y}
 pose_rect        := rl.Rectangle{show_sprite_rect.x + show_sprite_rect.width, 0, top_size.x, top_size.y}
 
-viewer_icon      := TopMenuIcon{rect = viewer_rect, active = false, color = rl.WHITE,icon = .ICON_PHOTO_CAMERA}
+mode_icon        := TopMenuIcon{rect = viewer_rect, active = false, color = rl.WHITE,icon = .ICON_PHOTO_CAMERA}
 save_icon        := TopMenuIcon{rect = save_rect, active = false, color = rl.BLACK,icon = .ICON_FILE_SAVE_CLASSIC}
 load_icon        := TopMenuIcon{rect = load_rect, active = false, color = rl.BLACK,icon = .ICON_FOLDER_FILE_OPEN}
 play_icon        := TopMenuIcon{rect = play_rect, active = false, color = rl.GREEN,icon = .ICON_PLAYER_PLAY}
@@ -377,6 +405,7 @@ scale_icon       := TopMenuIcon{rect = scale_rect, active = false, color = rl.BL
 origin_icon      := TopMenuIcon{rect = origin_rect, active = false, color = rl.BLUE, icon = .ICON_TARGET}
 show_sprite_icon := TopMenuIcon{rect = show_sprite_rect, active = false, color = rl.BLACK,icon = .ICON_BOX}
 pose_icon        := TopMenuIcon{rect = pose_rect, active = false, color = rl.BLACK,icon = .ICON_FILE_SAVE}
+
 
 draw_icon_button :: proc(icon : ^TopMenuIcon, pixel_size := i32(2)) -> int
 {
@@ -626,8 +655,6 @@ optimize_sprite :: proc(sprite: ^anim.Sprite, texture: rl.Texture2D) {
     rl.UnloadImageColors(pixels)
     rl.UnloadImage(img)
 }
-
-
 
 draw_dot :: proc(position: rl.Vector2) {
 	rl.DrawCircle(i32(position.x), i32(position.y), 4, rl.LIME)

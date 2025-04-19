@@ -76,9 +76,15 @@ draw_model :: proc (model: Model, txtr: rl.Texture2D)
         rl.DrawTexturePro(txtr, sprite.src, world_rec, sprite.local.origin, sprite.local.rotation, rl.WHITE)
     }
 }
+draw_sprite :: proc (sprite : Sprite, txtr: rl.Texture2D){
+   rl.DrawTexturePro(txtr, sprite.src, sprite.local.rect, sprite.local.origin, sprite.local.rotation, sprite.color)
+}
 
-draw_sprite :: proc (sprite : Sprite, txtr: ^rl.Texture2D){
-   rl.DrawTexturePro(txtr^, sprite.src, sprite.local.rect, sprite.local.origin, sprite.local.rotation, sprite.color)
+draw_pose :: proc (pose : Pose, txtr: rl.Texture2D)
+{
+    for s in pose.sprites{
+        rl.DrawTexturePro(txtr, s.src, s.local.rect, s.origin, s.rotation, rl.WHITE) //TODO: Investigate: This draws local sprite...
+    }
 }
 
 //--------------------------------------------------------------------------------------------------------\\
