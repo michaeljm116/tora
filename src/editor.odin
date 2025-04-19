@@ -11,95 +11,104 @@ left_size := f32(196)
 right_size := f32(4)
 top_size := rl.Vector2{32, 32}
 
-right_panel := rl.Rectangle{window_size.x - right_size, 0, right_size, window_size.y}
-bottom_panel := rl.Rectangle{0, window_size.y - bot_size, window_size.x, bot_size}
-left_panel := rl.Rectangle{0, 0, left_size, window_size.y}
-top_panel := rl.Rectangle{0, 0, window_size.x, top_size.y}
-
 model_creator : anim.Model
 model_viewer : anim.Model
 anim_creator : anim.Model
 anim_viewer : anim.Model
 curr_pose : anim.Pose
-txtr : rl.Texture2D
-
+curr_txtr : rl.Texture2D
 
 window_size := rl.Vector2{1280, 720}
 window_text_index := 0
 view_it := true
 
+Panels :: struct
+{
+   right : rl.Rectangle,
+   left : rl.Rectangle,
+   top : rl.Rectangle,
+   bottom : rl.Rectangle
+}
+Window :: struct
+{
+   names : [2]cstring,
+   using size: rl.Rectangle
+}
+Windows :: struct
+{
+   left : Window,
+   right : Window
+}
 
+
+
+//--------------------------------------------------------------------------------------------------------\\
+// /Main
+//--------------------------------------------------------------------------------------------------------\\
+init_editor_gui :: proc(windows : Windows, panels : Panels)
+{
+    // Load config file here:
+    //
+    lp_template = rl.Rectangle{panels.left.x + lp_padding, top_size.y + lp_padding, left_size - lp_padding * 2, lp_spacing}
+}
 update_editor_gui :: proc()
 {
     window_text_index = viewer_icon.active ? 1 : 0
     change_layer_order(&model_creator)
 }
 
-draw_editor_gui :: proc()
+draw_editor_gui :: proc(windows : Windows, panels : Panels)
 {
     //rl.DrawRectangleRec(right_panel, rl.DARKGRAY)
     //rl.DrawRectangleRec(bottom_panel, rl.DARKGRAY)
 
-    draw_right_window()
-    draw_left_window()
-    draw_left_panel(&model_creator)
-    draw_top_panel()
+    draw_right_window(windows.right)
+    draw_left_window(windows)
+    draw_left_panel(panels.left,&model_creator)
+    draw_top_panel(panels.top, windows.right)
     draw_tool_tip()
 }
 
-
 //--------------------------------------------------------------------------------------------------------\\
-// ?LeftWindow
+// /LeftWindow
 //--------------------------------------------------------------------------------------------------------\\
-left_window := rl.Rectangle{left_panel.x + left_panel.width, top_panel.y + top_panel.height, (window_size.x - left_panel.width - right_panel.width) / 2, (window_size.y - top_panel.height - bottom_panel.height)}
-left_window_text := []cstring{"Source Texture", "Model View"}
-
-draw_left_window :: proc()
+draw_left_window :: proc(windows: Windows)
 {
-    rl.GuiPanel(left_window, left_window_text[window_text_index])
-    if(!viewer_icon.active) do draw_texture(txtr)
-	else do anim.draw_model(model_viewer, txtr)
+    rl.GuiPanel(windows.left.size, windows.left.names[window_text_index])
+    if(!viewer_icon.active) do draw_texture(curr_txtr,windows)
+	else do anim.draw_model(model_viewer, curr_txtr)
 
 }
-draw_texture :: proc(txtr: rl.Texture2D)
+draw_texture :: proc(txtr: rl.Texture2D, windows: Windows)
 {
     txtr_rec_src := rl.Rectangle{0, 0, f32(txtr.width), f32(txtr.height)}
-	txtr_rec_dst := rl.Rectangle {
-		left_window.x,
-		left_window.y,
-		left_window.width,
-		left_window.height,
-	}
-
+	txtr_rec_dst := windows.left.size
 	rl.DrawTexturePro(txtr, txtr_rec_src, txtr_rec_dst, {0, 0}, 0, rl.WHITE)
-	if(drag_icon.active) do select_sprite(txtr, &model_creator)
+	if(drag_icon.active) do select_sprite(txtr, &model_creator, windows)
 }
 
 //--------------------------------------------------------------------------------------------------------\\
-// ?RightWindow
+// /RightWindow
 //--------------------------------------------------------------------------------------------------------\\
-right_window := rl.Rectangle{left_window.x + left_window.width, left_window.y, left_window.width, left_window.height}
-right_window_text := []cstring{"Model View" , "Animation View"}
-
-draw_right_window :: proc()
+draw_right_window :: proc(window: Window)
 {
-    rl.GuiPanel(right_window, right_window_text[window_text_index])
+    rl.GuiPanel(window.size, window.names[window_text_index])
 	for s in model_creator.sprites {
-		rl.DrawTexturePro(txtr, s.src, s.dst, s.origin, s.rotation, rl.WHITE)
+		rl.DrawTexturePro(curr_txtr, s.src, s.local.rect, s.origin, s.rotation, rl.WHITE) //TODO: Investigate: This draws local sprite...
 		if(show_sprite_icon.active){
-		  rl.DrawRectangleLinesEx(s.dst, 4, rl.BLACK)
+		  rl.DrawRectangleLinesEx(s.rect, 4, rl.BLACK)
 		}
 	}
 }
 
 //--------------------------------------------------------------------------------------------------------\\
-// ?TopPanel
+// /TopPanel
 //--------------------------------------------------------------------------------------------------------\\
-draw_top_panel :: proc()
+draw_top_panel :: proc(top_panel : rl.Rectangle, right_window : Window)
 {
 	rl.DrawRectangleRec(top_panel, rl.DARKGRAY)
 	draw_file_menu()
-	handle_save_menu(&model_creator)
+	handle_save_menu(&model_creator, right_window)
 	handle_model_loading()
 }
 
@@ -122,12 +131,12 @@ draw_file_menu :: proc()
     handle_transforms(&model_creator)
 }
 
-handle_save_menu :: proc(anim_model : ^anim.Model)
+handle_save_menu :: proc(anim_model : ^anim.Model, right_window : Window)
 {
     if(save_icon.active){
         anim_model.texture_path = "assets/animation-test.png"
         for &s in anim_model.sprites{
-            s.dst.x -= right_window.x
+            s.local.position.x -= right_window.x
         }
         anim.save_model(anim_model)
         save_icon.active = false
@@ -168,44 +177,44 @@ handle_transforms :: proc(anim_model : ^anim.Model)
         sprite := &sprites[curr_sprite]
         if(pos_icon.active)
         {
-            if(rl.IsKeyDown(.W)){sprite.dst.y -= 1}
-            if(rl.IsKeyDown(.S)){sprite.dst.y += 1}
-            if(rl.IsKeyDown(.A)){sprite.dst.x -= 1}
-            if(rl.IsKeyDown(.D)){sprite.dst.x += 1}
+            if(rl.IsKeyDown(.W)){sprite.local.position.y -= 1}
+            if(rl.IsKeyDown(.S)){sprite.local.position.y += 1}
+            if(rl.IsKeyDown(.A)){sprite.local.position.x -= 1}
+            if(rl.IsKeyDown(.D)){sprite.local.position.x += 1}
         }
         if(rot_icon.active){
-            if(rl.IsKeyDown(.A)){sprite.rotation -= 1}
-            if(rl.IsKeyDown(.D)){sprite.rotation += 1}
+            if(rl.IsKeyDown(.A)){sprite.local.rotation -= 1}
+            if(rl.IsKeyDown(.D)){sprite.local.rotation += 1}
         }
         if(scale_icon.active)
         {
-            if(rl.IsKeyDown(.W)){sprite.dst.height -= 1}
-            if(rl.IsKeyDown(.S)){sprite.dst.height += 1}
-            if(rl.IsKeyDown(.A)){sprite.dst.width -= 1}
-            if(rl.IsKeyDown(.D)){sprite.dst.width += 1}
+            if(rl.IsKeyDown(.W)){sprite.local.scale.y -= 1}
+            if(rl.IsKeyDown(.S)){sprite.local.scale.y += 1}
+            if(rl.IsKeyDown(.A)){sprite.local.scale.x -= 1}
+            if(rl.IsKeyDown(.D)){sprite.local.scale.x += 1}
         }
         if(origin_icon.active)
         {
-            rl.DrawCircle(i32(sprite.dst.x + sprite.origin.x), i32(sprite.dst.y + sprite.origin.y), 5, rl.BLACK)
-            if(rl.IsKeyDown(.W)){sprite.origin.y -= 1}
-            if(rl.IsKeyDown(.S)){sprite.origin.y += 1}
-            if(rl.IsKeyDown(.A)){sprite.origin.x -= 1}
-            if(rl.IsKeyDown(.D)){sprite.origin.x += 1}
+            rl.DrawCircle(i32(sprite.local.position.x + sprite.local.origin.x), i32(sprite.local.position.y + sprite.local.origin.y), 5, rl.BLACK)
+            if(rl.IsKeyDown(.W)){sprite.local.origin.y -= 1}
+            if(rl.IsKeyDown(.S)){sprite.local.origin.y += 1}
+            if(rl.IsKeyDown(.A)){sprite.local.origin.x -= 1}
+            if(rl.IsKeyDown(.D)){sprite.local.origin.x += 1}
         }
     }
 }
 //--------------------------------------------------------------------------------------------------------\\
-// ?LeftPanel
+// /LeftPanel
 //--------------------------------------------------------------------------------------------------------\\
 lp_padding : f32 = 4
 lp_spacing : f32 = 24
-lp_template := rl.Rectangle{left_panel.x + lp_padding, top_size.y + lp_padding, left_size - lp_padding * 2, lp_spacing}
+lp_template : rl.Rectangle
 curr_sprite := 0
 curr_y := f32(-1.0)
 green_seethrough := rl.Color{ 0, 228, 48, 49}
 
 editing_model_name := false
-draw_left_panel :: proc(anim_model : ^anim.Model)
+draw_left_panel :: proc(left_panel : rl.Rectangle, anim_model : ^anim.Model)
 {
     using anim_model
     // Draw the background
@@ -249,13 +258,13 @@ draw_left_panel :: proc(anim_model : ^anim.Model)
         editing_model_name = false
 	}
 
-	if(len(sprites) > 0 && editing_name) do	name_the_sprite(sprites[:], curr_sprite)
-	if(editing_model_name ) do name_it(&name)
+	if(len(sprites) > 0 && editing_name) do	name_the_sprite(sprites[:], curr_sprite, left_panel)
+	if(editing_model_name ) do name_it(&name, left_panel)
 }
 
 // change layer order,
-// if the number of sprites is greater than 1 
-// then poll for user input of either up or down if up 
+// if the number of sprites is greater than 1
+// then poll for user input of either up or down if up
 // then swap the array elements up and vv
 // if down then swap the array elements down and vv
 change_layer_order :: proc(anim_model : ^anim.Model)
@@ -269,7 +278,7 @@ change_layer_order :: proc(anim_model : ^anim.Model)
 }
 
 editing_name := false
-name_the_sprite :: proc(sprites : []anim.Sprite, index: int)
+name_the_sprite :: proc(sprites : []anim.Sprite, index: int, left_panel : rl.Rectangle)
 {
     sprite := &sprites[index]
     name_buf := str.clone_to_cstring(sprite.name)
@@ -287,7 +296,7 @@ name_the_sprite :: proc(sprites : []anim.Sprite, index: int)
     }
 }
 
-name_it :: proc(name : ^string)
+name_it :: proc(name : ^string, left_panel : rl.Rectangle)
 {
     name_buf := str.clone_to_cstring(name^)
     input_rect := rl.Rectangle{
@@ -408,7 +417,7 @@ draw_tool_tip :: proc()
 }
 
 //--------------------------------------------------------------------------------------------------------\\
-// ?DefaultStyle
+// /DefaultStyle
 //--------------------------------------------------------------------------------------------------------\\
 TEXT_SIZE :: i32(rl.GuiDefaultProperty.TEXT_SIZE)
 TEXT_COLOR :: i32(rl.GuiControlProperty.TEXT_COLOR_NORMAL)
@@ -437,7 +446,7 @@ set_size_and_color :: proc(size, color : i32){
 }
 
 //--------------------------------------------------------------------------------------------------------\\
-// ?DragNDrop
+// /DragNDrop
 //--------------------------------------------------------------------------------------------------------\\
 b_select_sprite := false
 pick_sprite_state := PickSpriteState.None
@@ -456,17 +465,17 @@ PickSpriteState :: enum {
 	DragBox
 }
 
-select_sprite :: proc(txtr: rl.Texture2D, model : ^anim.Model) {
+select_sprite :: proc(txtr: rl.Texture2D, model : ^anim.Model, windows : Windows) {
 	mouse_pos := rl.GetMousePosition()
 	switch (pick_sprite_state)
 	{
 	case .None:
-		if(rl.IsMouseButtonPressed(.LEFT) && is_in_window(mouse_pos, left_window)){
+		if(rl.IsMouseButtonPressed(.LEFT) && is_in_window(mouse_pos, windows.left)){
 			rect_start = mouse_pos
 			pick_sprite_state = .FirstClick}
 	case .FirstClick:
 		draw_dot(rect_start)
-		if(is_in_window(mouse_pos, left_window)){
+		if(is_in_window(mouse_pos, windows.left)){
 			if(rl.IsMouseButtonReleased(.LEFT)){pick_sprite_state = .ClickNRelease}
 			if(rl.IsMouseButtonDown(.LEFT)){pick_sprite_state = .ClickNDrag}
 		}else{
@@ -474,13 +483,13 @@ select_sprite :: proc(txtr: rl.Texture2D, model : ^anim.Model) {
 		}
 	case .ClickNRelease:
 		draw_dot(rect_start)
-		if(rl.IsMouseButtonPressed(.LEFT) && is_in_window(mouse_pos, left_window)){
+		if(rl.IsMouseButtonPressed(.LEFT) && is_in_window(mouse_pos, windows.left)){
 			rect_end = mouse_pos
 			pick_sprite_state = .BoxDrawn
 		}
 	case .ClickNDrag:
 		draw_dot(rect_start)
-		if(is_in_window(mouse_pos, left_window)){
+		if(is_in_window(mouse_pos, windows.left)){
 			if(rl.IsMouseButtonDown(.LEFT)){
 				draw_transparent(rect_start, mouse_pos)
 			}else if(rl.IsMouseButtonReleased(.LEFT)){
@@ -492,10 +501,10 @@ select_sprite :: proc(txtr: rl.Texture2D, model : ^anim.Model) {
 			}
 		}else{
 			if(rl.IsMouseButtonDown(.LEFT)){
-				draw_transparent(rect_start, window_clamp_opt(mouse_pos, left_window))
+				draw_transparent(rect_start, window_clamp_opt(mouse_pos, windows.left))
 			}
 			if(rl.IsMouseButtonReleased(.LEFT)){
-				rect_end = window_clamp_opt(mouse_pos, left_window)
+				rect_end = window_clamp_opt(mouse_pos, windows.left)
 				sprite_rect = rl.Rectangle{rect_start.x, rect_start.y, rect_end.x - rect_start.x, rect_end.y - rect_start.y}
 				box_rect = rl.Rectangle{rect_start.x, rect_start.y, rect_end.x, rect_end.y}
 				pick_sprite_state = .BoxDrawn
@@ -505,7 +514,7 @@ select_sprite :: proc(txtr: rl.Texture2D, model : ^anim.Model) {
 		draw_rect_lines(rect_start, rect_end)
 		if(rl.IsMouseButtonPressed(.LEFT))
 		{
-			in_box := is_in_window(mouse_pos, box_rect)
+			in_box := rl.CheckCollisionPointRec(mouse_pos, box_rect)// is_in_window(mouse_pos, box_rect)
 			if(in_box){
 				pick_sprite_state = .DragBox
 				offset = mouse_pos - rect_start
@@ -514,10 +523,10 @@ select_sprite :: proc(txtr: rl.Texture2D, model : ^anim.Model) {
 				pick_sprite_state = .None}
 		}
 	case .DragBox:
-		src,dst := draw_rect_lines_w_sprite(txtr, mouse_pos - offset, {sprite_rect.width, sprite_rect.height})
+		src,dst := draw_rect_lines_w_sprite(txtr, mouse_pos - offset, {sprite_rect.width, sprite_rect.height}, windows.left)
 		if(rl.IsMouseButtonPressed(.LEFT)){
-			if(is_in_window(mouse_pos - offset, right_window)){
-				sprite := anim.Sprite{src = src, dst = dst}
+			if(is_in_window(mouse_pos - offset, windows.right)){
+				sprite := anim.Sprite{src = src, rect = dst}
 				//optimize_sprite(&sprite, txtr)
 				sprite.name = fmt.tprintf("New Sprite(%i)", len(model.sprites))
 				append(&model.sprites, sprite)
@@ -530,7 +539,7 @@ select_sprite :: proc(txtr: rl.Texture2D, model : ^anim.Model) {
 	}
 }
 
-is_in_window :: proc(mouse_pos: rl.Vector2, window: rl.Rectangle) -> bool {
+is_in_window :: proc(mouse_pos: rl.Vector2, window: Window) -> bool {
 	if (mouse_pos.x > window.x &&
 		   mouse_pos.x < window.x + window.width &&
 		   mouse_pos.y > window.y &&
@@ -542,7 +551,7 @@ is_in_window :: proc(mouse_pos: rl.Vector2, window: rl.Rectangle) -> bool {
 }
 
 // If you are outside of window, this clamps to the edge of the window
-window_clamp :: proc(mouse_pos: rl.Vector2, window: rl.Rectangle) -> rl.Vector2 {
+window_clamp :: proc(mouse_pos: rl.Vector2, window: Window) -> rl.Vector2 {
 	ret := mouse_pos
 	if(mouse_pos.x < window.x){ ret.x = window.x}
 	else if(ret.x > window.x + window.width) {ret.x = window.x + window.width}
@@ -552,7 +561,7 @@ window_clamp :: proc(mouse_pos: rl.Vector2, window: rl.Rectangle) -> rl.Vector2 
 }
 
 // use opt if you KNOW you're not in the window
-window_clamp_opt :: proc(mouse_pos: rl.Vector2, window: rl.Rectangle) -> rl.Vector2 {
+window_clamp_opt :: proc(mouse_pos: rl.Vector2, window: Window) -> rl.Vector2 {
 	ret : rl.Vector2
 	if(mouse_pos.x < window.x){ ret.x = window.x}
 	else {ret.x = window.x + window.width}
@@ -632,15 +641,15 @@ draw_rect_lines :: proc(first, second: rl.Vector2) {
 	rl.DrawRectangleLinesEx(rect, 4, rl.SKYBLUE)
 }
 
-draw_rect_lines_w_sprite :: proc(txtr: rl.Texture2D, pos, size: rl.Vector2) -> (rl.Rectangle,rl.Rectangle)
+draw_rect_lines_w_sprite :: proc(txtr: rl.Texture2D, pos, size: rl.Vector2, window: Window) -> (rl.Rectangle,rl.Rectangle)
 {
 	ratio := rl.Vector2 {
-		f32(txtr.width) / left_window.width,
-		f32(txtr.height) / left_window.height,
+		f32(txtr.width) / window.width,
+		f32(txtr.height) / window.height,
 	} //very unoptimal
 	src := rl.Rectangle {
-		(rect_start.x - left_window.x) * ratio.x,
-		(rect_start.y - left_window.y) * ratio.y,
+		(rect_start.x - window.x) * ratio.x,
+		(rect_start.y - window.y) * ratio.y,
 		size.x * ratio.x,
 		size.y * ratio.y,
 	}

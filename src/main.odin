@@ -15,10 +15,34 @@ main :: proc()
     rl.SetTargetFPS(120)
     init_default_style()
 
-    
+
     recent_texture_path := load_recent_texture("../config.ini")
-    txtr = rl.LoadTexture("assets/animation-test.png")
-    
+    curr_txtr = rl.LoadTexture("assets/animation-test.png")
+
+    panels := Panels {
+        right = rl.Rectangle{window_size.x - right_size, 0, right_size, window_size.y},
+        bottom = rl.Rectangle{0, window_size.y - bot_size, window_size.x, bot_size},
+        left = rl.Rectangle{0, 0, left_size, window_size.y},
+        top = rl.Rectangle{0, 0, window_size.x, top_size.y}
+    }
+    windows := Windows {
+        left = Window{
+            names = {"Source Texture","Model View"},
+            size = {panels.left.x + panels.left.width,
+            panels.top.y + panels.top.height,
+            (window_size.x - panels.left.width - panels.right.width) / 2,
+            (window_size.y - panels.top.height - panels.bottom.height)}
+        },
+        right = Window{
+            names = {"Model View", "Anim View"},
+            size = {panels.left.x + panels.left.width + (window_size.x - panels.left.width - panels.right.width) / 2,
+            panels.top.y + panels.top.height,
+            (window_size.x - panels.left.width - panels.right.width) / 2,
+            (window_size.y - panels.top.height - panels.bottom.height)}
+        },
+    }
+
+    init_editor_gui(windows, panels)
     for(!rl.WindowShouldClose())
     {
         //update scene
@@ -28,8 +52,8 @@ main :: proc()
         rl.ClearBackground(rl.DARKGRAY)
         rl.GuiEnable()
 
-        draw_editor_gui()
-        
+        draw_editor_gui(windows, panels)
+
 
         rl.EndDrawing()
     }
@@ -42,7 +66,7 @@ load_recent_texture :: proc(path: string) -> string {
         return ""
     }
     defer delete(data)
-    
+
     content := string(data)
     lines := strings.split(content, "\n")
     for line in lines {

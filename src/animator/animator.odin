@@ -14,21 +14,20 @@ Sprite :: struct
 {
 	name:     string,
 	src:      rl.Rectangle,
-	dst:      rl.Rectangle,
-	origin:   rl.Vector2,
-	rotation: f32,
+	using local:  Transform,
 	color:    rl.Color,
 	layer:    u8,
 }
 
-Transform :: struct
+/*Transform :: struct
 {
 	origin:   rl.Vector2,
 	position: rl.Vector2,
 	scale:    rl.Vector2,
 	rotation: f32,
 	pad:      u32,
-}
+}*/
+
 
 Pose :: struct{
 	name: string,
@@ -46,6 +45,19 @@ Model :: struct
 	//anims : [dynamic]Animation,
 }
 
+@private
+RectTransform :: struct {
+    position, scale: rl.Vector2
+}
+
+@private
+PosScaleRect :: struct #raw_union {rect: rl.Rectangle, using _: RectTransform}
+Transform :: struct {
+    using _: PosScaleRect,
+    origin:   rl.Vector2,
+    rotation: f32
+}
+
 
 //--------------------------------------------------------------------------------------------------------\\
 // ?Draw
@@ -55,18 +67,18 @@ draw_model :: proc (model: Model, txtr: rl.Texture2D)
     trans := model.trans_w
     for sprite in model.sprites
     {
-        dst := rl.Rectangle{
-            sprite.dst.x + trans.position.x,
-            sprite.dst.y + trans.position.y,
-            sprite.dst.width * trans.scale.x,
-            sprite.dst.height * trans.scale.y
+        world_rec := rl.Rectangle{
+            sprite.local.position.x + trans.position.x,
+            sprite.local.position.y + trans.position.y,
+            sprite.local.scale.x * trans.scale.x,
+            sprite.local.scale.y * trans.scale.y
         }
-        rl.DrawTexturePro(txtr, sprite.src, dst, sprite.origin, sprite.rotation, rl.WHITE)
+        rl.DrawTexturePro(txtr, sprite.src, world_rec, sprite.local.origin, sprite.local.rotation, rl.WHITE)
     }
 }
 
 draw_sprite :: proc (sprite : Sprite, txtr: ^rl.Texture2D){
-   rl.DrawTexturePro(txtr^, sprite.src, sprite.dst, sprite.origin, sprite.rotation, sprite.color)
+   rl.DrawTexturePro(txtr^, sprite.src, sprite.local.rect, sprite.local.origin, sprite.local.rotation, sprite.color)
 }
 
 //--------------------------------------------------------------------------------------------------------\\
@@ -111,8 +123,8 @@ COMPARES THESE 4 things from sprite:
 If any chagnes, return true
 */
 sprite_changed :: proc(src, dst : Sprite) -> bool {
-    src_rect := src.dst
-    dst_rect := dst.dst
+    src_rect := src.rect
+    dst_rect := dst.rect
     if src_rect.x != dst_rect.x || src_rect.y != dst_rect.y || src_rect.width != dst_rect.width || src_rect.height != dst_rect.height do return true
     if src.origin.x != dst.origin.x || src.origin.y != dst.origin.y do return true
     if src.rotation != dst.rotation do return true
