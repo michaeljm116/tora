@@ -90,7 +90,7 @@ draw_pose :: proc (pose : Pose, txtr: rl.Texture2D)
 //--------------------------------------------------------------------------------------------------------\\
 // ?Serialize
 //--------------------------------------------------------------------------------------------------------\\
-save_model :: proc(anim_model : ^Model)
+save_model :: proc(anim_model : Model)
 {
     opt : json.Marshal_Options = {pretty = true}
     data, err := json.marshal(anim_model, opt)

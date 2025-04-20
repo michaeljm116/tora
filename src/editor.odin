@@ -6,7 +6,6 @@ import ex "extensions"
 import anim "animator"
 import "core:fmt"
 
-
 model_creator : anim.Model
 model_viewer : anim.Model
 anim_creator : anim.Model
@@ -141,13 +140,14 @@ draw_file_menu :: proc()
     draw_icon_button_tt(&show_sprite_icon,"Show Box around sprite")
     if(draw_icon_button_tt(&drag_icon,"Select an object") > 0) do pick_sprite_state = .None
     if(draw_icon_button_tt(&pose_icon,"Save Pose")) > 0 do anim.save_pose(&model_viewer, &curr_pose)
+    handle_transforms()
 
     #partial switch editor_state
     {
         case .Model:
-            if len(model_creator.sprites) > 0 do handle_transforms(&model_creator.sprites[curr_sprite])
+            if len(model_creator.sprites) > 0 do transform_sprite(&model_creator.sprites[curr_sprite])
         case .Pose:
-            if len(curr_pose.sprites) > 0 do handle_transforms(&curr_pose.sprites[curr_sprite])
+            if len(curr_pose.sprites) > 0 do transform_sprite(&curr_pose.sprites[curr_sprite])
     }
 }
 
@@ -167,7 +167,7 @@ handle_save_menu :: proc(anim_model : ^anim.Model, right_window : Window)
         for &s in anim_model.sprites{
             s.local.position.x -= right_window.x
         }
-        anim.save_model(anim_model)
+        anim.save_model(anim_model^)
         save_icon.active = false
     }
 }
@@ -178,14 +178,14 @@ handle_model_loading :: proc()
     if(editor_state == .Pose && !model_loaded)
     {
         model_viewer = anim.import_model("assets/Full_Model.json")
+        fmt.printfln("Model %s Loaded ScucessfullY", model_viewer.name)
         model_loaded = true
-        anim_creator = model_viewer
         curr_pose.sprites = make([dynamic]anim.Sprite, len(model_viewer.sprites))
         copy(curr_pose.sprites[:], model_viewer.sprites[:])
     }
 }
 
-handle_transforms :: proc(sprite : ^anim.Sprite)
+handle_transforms :: proc()
 {
     if(draw_icon_button_tt(&pos_icon, "Translate Sprite") > 0){
         rot_icon.active, scale_icon.active, origin_icon.active = false, false, false
@@ -199,7 +199,6 @@ handle_transforms :: proc(sprite : ^anim.Sprite)
     else if(draw_icon_button_tt(&origin_icon, "Change Origin") > 0){
         pos_icon.active, rot_icon.active, scale_icon.active = false, false, false
     }
-    transform_sprite(sprite)
 }
 
 transform_sprite :: proc (sprite : ^anim.Sprite)
