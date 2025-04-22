@@ -4,6 +4,7 @@ import rl "vendor:raylib"
 import str "core:strings"
 import ex "extensions"
 import anim "animator"
+import "core:mem"
 import "core:fmt"
 
 model_creator : anim.Model
@@ -49,6 +50,7 @@ init_editor_gui :: proc(windows : Windows, panels : Panels)
 {
     // Load config file here:
     lp_template = rl.Rectangle{panels.left.x + lp_padding, top_size.y + lp_padding, left_size - lp_padding * 2, lp_spacing}
+    model_creator.name = "New Model"
 }
 update_editor_gui :: proc()
 {
@@ -63,7 +65,7 @@ draw_editor_gui :: proc(windows : Windows, panels : Panels)
 
     draw_right_window(windows.right)
     draw_left_window(windows)
-    draw_left_panel(panels.left,&model_creator)
+    draw_left_panel(panels.left)
     draw_top_panel(panels.top, windows.right)
     draw_tool_tip()
 }
@@ -89,7 +91,7 @@ draw_texture :: proc(txtr: rl.Texture2D, windows: Windows)
 }
 
 //--------------------------------------------------------------------------------------------------------\\
-// /RightWindow
+// /RightWindow - /rw
 //--------------------------------------------------------------------------------------------------------\\
 draw_right_window :: proc(window: Window)
 {
@@ -231,7 +233,7 @@ transform_sprite :: proc (sprite : ^anim.Sprite)
     }
 }
 //--------------------------------------------------------------------------------------------------------\\
-// /LeftPanel
+// /LeftPanel - /lp
 //--------------------------------------------------------------------------------------------------------\\
 lp_padding : f32 = 4
 lp_spacing : f32 = 24
@@ -240,27 +242,47 @@ curr_sprite := 0
 curr_y := f32(-1.0)
 green_seethrough := rl.Color{ 0, 228, 48, 49}
 
-editing_model_name := false
-draw_left_panel :: proc(left_panel : rl.Rectangle, anim_model : ^anim.Model)
+draw_left_panel :: proc(left_panel : rl.Rectangle)
 {
-    using anim_model
+    model_sprites : ^[dynamic]anim.Sprite
+    model_name : ^string
+
+    #partial switch editor_state
+    {
+        case .Model: {
+            model_sprites = &model_creator.sprites
+            model_name = &model_creator.name
+        }
+        case .Pose:{
+            model_sprites = &curr_pose.sprites
+            model_name = &curr_pose.name
+        }
+    }
+
     // Draw the background
 	rl.DrawRectangleRec(left_panel, rl.GRAY)
 	temp_rec := lp_template
 	set_size_and_color(i32(lp_spacing), I32COLOR_WHITE)
 
 	//First show the model name
-	if(rl.GuiLabelButton(temp_rec, str.clone_to_cstring(name))){
+	cname := str.clone_to_cstring(model_name^)
+	defer delete(cname)
+	if(rl.GuiLabelButton(temp_rec, cname)){
 	   curr_y = temp_rec.y
 	}
-	if(ex.rl_right_clicked(temp_rec) == 2) do editing_model_name = true
+	if(ex.rl_right_clicked(temp_rec) == 2){
+        ex.copy_str_to_buf(model_name^, &model_name_buf)
+        editing_model_name = true
+    }
 	temp_rec.y += lp_spacing
 
 	//For each sprite, show the name
 	//If name is clicked, set that to curr_sprite
-	for s, i in sprites
+	for s, i in model_sprites
 	{
-        if rl.GuiLabelButton(temp_rec, str.clone_to_cstring(s.name)){
+	    cname2 := str.clone_to_cstring(model_name^)
+		defer delete(cname2)
+        if rl.GuiLabelButton(temp_rec, cname2){
             curr_sprite = i
             editing_name = false
             curr_y = temp_rec.y
@@ -278,22 +300,68 @@ draw_left_panel :: proc(left_panel : rl.Rectangle, anim_model : ^anim.Model)
 
 	// edit the name if... curr_sprite is rightclicked
 	if(ex.rl_right_clicked(temp_rec) == 2){
+	    ex.copy_str_to_buf(model_name^, &sprite_name_buf)
 	   editing_name = true
-	}
-	if(rl.IsKeyPressed(.ENTER)){
-        editing_name = false
-        editing_model_name = false
+       //sprite_name_buf = raw_data(model_sprites[curr_sprite].name)
 	}
 
-	if(len(sprites) > 0 && editing_name) do	name_the_sprite(sprites[:], curr_sprite, left_panel)
-	if(editing_model_name ) do name_it(&name, left_panel)
+	if(len(model_sprites) > 0 && editing_name) do name_the_sprite(model_sprites, curr_sprite, left_panel)
+	if(editing_model_name ) do name_the_model(model_name, left_panel)
 }
 
-// change layer order,
-// if the number of sprites is greater than 1
-// then poll for user input of either up or down if up
-// then swap the array elements up and vv
-// if down then swap the array elements down and vv
+
+editing_model_name := false
+editing_name := false
+model_name_buf : [128]u8
+sprite_name_buf : [128]u8
+
+// 1. Copy Model name into buffer,
+// 2. convert butter to cstring,
+// 3. use cstring in raylib,
+// 4. copy cstring to model name
+name_the_sprite :: proc(sprites : ^[dynamic]anim.Sprite, index: int, left_panel : rl.Rectangle)
+{
+    sprite := &sprites[index]
+    input_rect := rl.Rectangle{
+        x = left_panel.x,
+        y = window_size.y - 32,
+        width = left_panel.width,
+        height = 32,
+    };    secret := false
+
+    // Follow above instructions here
+    result := rl.GuiTextBox(input_rect,cstring(&sprite_name_buf[0]), 128, editing_name)
+    if rl.IsKeyPressed(.ENTER){
+        editing_model_name = false
+        editing_name = false
+        temp := ex.buf_to_str(&sprite_name_buf)
+        sprite.name = temp
+        delete(temp)
+        sprite_name_buf = {}
+        model_name_buf = {}
+    }
+}
+
+name_the_model :: proc(name : ^string, left_panel : rl.Rectangle)
+{
+    input_rect := rl.Rectangle{
+        x = left_panel.x,
+        y = window_size.y - 32,
+        width = left_panel.width,
+        height = 32,
+    };
+    result := rl.GuiTextBox(input_rect, cstring(&model_name_buf[0]), 128, editing_model_name)
+    if rl.IsKeyPressed(.ENTER){
+        editing_model_name = false
+        editing_name = false
+        temp := ex.buf_to_str(&model_name_buf)
+        name^ = temp
+        delete(temp)
+        sprite_name_buf = {}
+        model_name_buf = {}
+    }
+}
+
 change_layer_order :: proc(anim_model : ^anim.Model)
 {
     using anim_model
@@ -303,43 +371,6 @@ change_layer_order :: proc(anim_model : ^anim.Model)
         else if rl.IsKeyPressed(.DOWN) do swap_down(sprites, &curr_sprite)
     }
 }
-
-editing_name := false
-name_the_sprite :: proc(sprites : []anim.Sprite, index: int, left_panel : rl.Rectangle)
-{
-    sprite := &sprites[index]
-    name_buf := str.clone_to_cstring(sprite.name)
-    input_rect := rl.Rectangle{
-        x = left_panel.x,
-        y = window_size.y - 32,
-        width = left_panel.width,
-        height = 32,
-    };
-    secret := false
-    result := rl.GuiTextBox(input_rect, name_buf, 128, editing_name)
-
-    if result != true{
-        sprite.name = str.clone_from_cstring(name_buf)
-    }
-}
-
-name_it :: proc(name : ^string, left_panel : rl.Rectangle)
-{
-    name_buf := str.clone_to_cstring(name^)
-    input_rect := rl.Rectangle{
-        x = left_panel.x,
-        y = window_size.y - 32,
-        width = left_panel.width,
-        height = 32,
-    };
-    secret := false
-    result := rl.GuiTextBox(input_rect, name_buf, 128, editing_model_name)
-
-    if result != true{
-        name^ = str.clone_from_cstring(name_buf)
-    }
-}
-
 /// Swap Up, This proc takes a sprite array and its index and does a swap with the previous element
 swap_up :: proc(sprite_array : [dynamic]anim.Sprite, curr_sprite : ^int)
 {
@@ -359,8 +390,6 @@ swap_down :: proc(sprite_array : [dynamic]anim.Sprite, curr_sprite : ^int)
         curr_sprite^ = index + 1
     }
 }
-
-
 
 //--------------------------------------------------------------------------------------------------------\\
 // ?Icons

@@ -1,0 +1,37 @@
+{
+	"name": "asdfasdf",
+	"sprites": [
+
+	],
+	"poses": [
+		{
+			"name": "nil pose",
+			"sprites": [
+
+			]
+		}
+	],
+	"has_anim": false,
+	"texture_path": "assets/animation-test.png",
+	"trans_w": {
+				"rect": {
+			"x": 0.00000000,
+			"y": 0.00000000,
+			"width": 0.00000000,
+			"height": 0.00000000
+		},
+				"position": [
+			0.00000000,
+			0.00000000
+		],
+		"scale": [
+			0.00000000,
+			0.00000000
+		],
+		"origin": [
+			0.00000000,
+			0.00000000
+		],
+		"rotation": 0.00000000
+	}
+}
