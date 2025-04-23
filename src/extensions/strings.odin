@@ -8,29 +8,53 @@ string16 :: struct {
     len: u8
 }
 
-s16_to_cstr :: proc(from : string16) -> (to:cstring)
+s16_to_cstr_c :: proc(from : string16) -> (to:cstring)
 {
     cpy := from
-    mem.copy(&to, &cpy.data, int(cpy.len))
+    to = cstring(raw_data(cpy.data[:]))
     return
 }
-str_to_s16 :: proc(src: string) -> string16 {
-   result: string16;
-   n := min(len(src), 15);
+s16_to_cstr_p :: proc(from : ^string16) -> (to:cstring)
+{
+    to = cstring(raw_data(from.data[:]))
+    return
+}
+s16_to_cstr :: proc{s16_to_cstr_c, s16_to_cstr_p}
+
+str_to_s16_c :: proc(from: string) -> (to:string16) {
+   n := min(len(from), 15)
    for i in 0..<n {
-       result.data[i] = src[i];
+       to.data[i] = from[i]
    }
-   result.len = u8(n);
-   return result;
+   to.len = u8(n)
+   return
 }
 
-make_s16 :: proc(data : cstring) -> (to:string16)
+str_to_s16_p :: proc(to : ^string16, from:string)
 {
-    cpy := data
-    count := min(len(data), 14)
-    mem.copy(&to, &cpy, count)
-    return
+   n := min(len(from),15)
+   for i in 0..<n{
+       to.data[i] = from[i]
+   }
+   to.len = u8(n)
 }
+
+str_to_s16 :: proc{str_to_s16_c, str_to_s16_p}
+make_s16_c :: proc(data: cstring) -> (to:string16) {
+   cpy := transmute([^]u8)data
+   count := min(len(data), 15)
+   mem.copy(&to.data, cpy, count)
+   to.len = u8(count)
+   return
+}
+make_s16_p :: proc(data: ^cstring) -> (to:string16) {
+   count := min(len(data), 15)
+   mem.copy(&to.data, data, count)
+   to.len = u8(count)
+   return
+}
+make_s16 :: proc{make_s16_c, make_s16_p}
+
 clear_s16 :: proc(s16 : ^string16)
 {
    s16.data = {}
