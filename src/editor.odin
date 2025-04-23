@@ -50,7 +50,7 @@ init_editor_gui :: proc(windows : Windows, panels : Panels)
 {
     // Load config file here:
     lp_template = rl.Rectangle{panels.left.x + lp_padding, top_size.y + lp_padding, left_size - lp_padding * 2, lp_spacing}
-    model_creator.name = "New Model"
+    model_creator.name = ex.make_s16("New Model")
 }
 update_editor_gui :: proc()
 {
@@ -245,17 +245,17 @@ green_seethrough := rl.Color{ 0, 228, 48, 49}
 draw_left_panel :: proc(left_panel : rl.Rectangle)
 {
     model_sprites : ^[dynamic]anim.Sprite
-    model_name : ^string
+    model_name : ex.string16
 
     #partial switch editor_state
     {
         case .Model: {
             model_sprites = &model_creator.sprites
-            model_name = &model_creator.name
+            model_name = model_creator.name
         }
         case .Pose:{
             model_sprites = &curr_pose.sprites
-            model_name = &curr_pose.name
+            model_name = curr_pose.name
         }
     }
 
@@ -265,14 +265,13 @@ draw_left_panel :: proc(left_panel : rl.Rectangle)
 	set_size_and_color(i32(lp_spacing), I32COLOR_WHITE)
 
 	//First show the model name
-	cname := str.clone_to_cstring(model_name^)
-	defer delete(cname)
-	if(rl.GuiLabelButton(temp_rec, cname)){
+	if(rl.GuiLabelButton(temp_rec, ex.s16_to_cstr(model_name))){
 	   curr_y = temp_rec.y
 	}
 	if(ex.rl_right_clicked(temp_rec) == 2){
-        ex.copy_str_to_buf(model_name^, &model_name_buf)
-        editing_model_name = true
+        ex.clear_s16(&name_buf)
+        name_buf = model_name
+        editing_name = true
     }
 	temp_rec.y += lp_spacing
 
@@ -280,8 +279,7 @@ draw_left_panel :: proc(left_panel : rl.Rectangle)
 	//If name is clicked, set that to curr_sprite
 	for s, i in model_sprites
 	{
-	    cname2 := str.clone_to_cstring(model_name^)
-		defer delete(cname2)
+	    cname2 := ex.s16_to_cstr(s.name)
         if rl.GuiLabelButton(temp_rec, cname2){
             curr_sprite = i
             editing_name = false
@@ -300,49 +298,33 @@ draw_left_panel :: proc(left_panel : rl.Rectangle)
 
 	// edit the name if... curr_sprite is rightclicked
 	if(ex.rl_right_clicked(temp_rec) == 2){
-	    ex.copy_str_to_buf(model_name^, &sprite_name_buf)
-	   editing_name = true
+		name_buf = model_name
+	    editing_name = true
        //sprite_name_buf = raw_data(model_sprites[curr_sprite].name)
 	}
-
-	if(len(model_sprites) > 0 && editing_name) do name_the_sprite(model_sprites, curr_sprite, left_panel)
-	if(editing_model_name ) do name_the_model(model_name, left_panel)
+	if(editing_name){
+       	#partial switch editor_state{
+    	    case .Model:
+    			if(len(model_sprites) > 0){
+    			    edit_name(&model_sprites[curr_sprite].name, left_panel)
+    			}
+    		case .Pose:
+    		    edit_name(&model_name,left_panel)
+    	}
+	}
 }
 
-
-editing_model_name := false
+edit_index := 0
 editing_name := false
-model_name_buf : [128]u8
-sprite_name_buf : [128]u8
+name_buf : ex.string16
+
 
 // 1. Copy Model name into buffer,
 // 2. convert butter to cstring,
 // 3. use cstring in raylib,
 // 4. copy cstring to model name
-name_the_sprite :: proc(sprites : ^[dynamic]anim.Sprite, index: int, left_panel : rl.Rectangle)
-{
-    sprite := &sprites[index]
-    input_rect := rl.Rectangle{
-        x = left_panel.x,
-        y = window_size.y - 32,
-        width = left_panel.width,
-        height = 32,
-    };    secret := false
 
-    // Follow above instructions here
-    result := rl.GuiTextBox(input_rect,cstring(&sprite_name_buf[0]), 128, editing_name)
-    if rl.IsKeyPressed(.ENTER){
-        editing_model_name = false
-        editing_name = false
-        temp := ex.buf_to_str(&sprite_name_buf)
-        sprite.name = temp
-        delete(temp)
-        sprite_name_buf = {}
-        model_name_buf = {}
-    }
-}
-
-name_the_model :: proc(name : ^string, left_panel : rl.Rectangle)
+edit_name :: proc(name : ^ex.string16, left_panel : rl.Rectangle)
 {
     input_rect := rl.Rectangle{
         x = left_panel.x,
@@ -350,15 +332,11 @@ name_the_model :: proc(name : ^string, left_panel : rl.Rectangle)
         width = left_panel.width,
         height = 32,
     };
-    result := rl.GuiTextBox(input_rect, cstring(&model_name_buf[0]), 128, editing_model_name)
+    result := rl.GuiTextBox(input_rect, ex.s16_to_cstr(name_buf), 128, editing_name)
     if rl.IsKeyPressed(.ENTER){
-        editing_model_name = false
         editing_name = false
-        temp := ex.buf_to_str(&model_name_buf)
-        name^ = temp
-        delete(temp)
-        sprite_name_buf = {}
-        model_name_buf = {}
+        name^ = name_buf
+        ex.clear_s16(&name_buf)
     }
 }
 
@@ -585,7 +563,7 @@ select_sprite :: proc(txtr: rl.Texture2D, model : ^anim.Model, windows : Windows
 			if(is_in_window(mouse_pos - offset, windows.right)){
 				sprite := anim.Sprite{src = src, rect = dst}
 				//optimize_sprite(&sprite, txtr)
-				sprite.name = fmt.tprintf("New Sprite(%i)", len(model.sprites))
+				sprite.name = ex.str_to_s16(fmt.tprintf("New Sprite(%i)", len(model.sprites)))
 				append(&model.sprites, sprite)
 				pick_sprite_state = .None
 			}

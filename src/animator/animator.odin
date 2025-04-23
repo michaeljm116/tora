@@ -6,37 +6,26 @@ import "core:fmt"
 import "core:os"
 import "core:strings"
 import "core:encoding/json"
-
 //--------------------------------------------------------------------------------------------------------\\
 // /Assets
 //--------------------------------------------------------------------------------------------------------\\
 Sprite :: struct
 {
-	name:     string,
+	name:     ex.string16,
 	src:      rl.Rectangle,
 	using local:  Transform,
 	color:    rl.Color,
 	layer:    u8,
 }
 
-/*Transform :: struct
-{
-	origin:   rl.Vector2,
-	position: rl.Vector2,
-	scale:    rl.Vector2,
-	rotation: f32,
-	pad:      u32,
-}*/
-
-
 Pose :: struct{
-	name: string,
+	name: ex.string16,
 	sprites: [dynamic]Sprite,
 }
 
 Model :: struct
 {
-    name:         string,
+    name:         ex.string16,
 	sprites:      [dynamic]Sprite,
 	poses:        [dynamic]Pose,
 	has_anim:     bool,
