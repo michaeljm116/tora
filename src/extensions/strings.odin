@@ -38,7 +38,6 @@ str_to_s16_p :: proc(to : ^string16, from:string)
    }
    to.len = u8(n)
 }
-
 str_to_s16 :: proc{str_to_s16_c, str_to_s16_p}
 make_s16_c :: proc(data: cstring) -> (to:string16) {
    cpy := transmute([^]u8)data

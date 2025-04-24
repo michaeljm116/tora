@@ -17,6 +17,9 @@ curr_txtr : rl.Texture2D
 window_text_index := 0
 view_it := true
 
+//--------------------------------------------------------------------------------------------------------\\
+// /Structs /st
+//--------------------------------------------------------------------------------------------------------\\
 EditorState :: enum
 {
    Model,
@@ -107,7 +110,8 @@ draw_right_window :: proc(window: Window)
            	}
         case .Pose:
             for s in curr_pose.sprites{
-                rl.DrawTexturePro(curr_txtr, s.src, s.local.rect, s.origin, s.rotation, rl.WHITE) //TODO: Investigate: This draws local sprite...
+                dst := rl.Rectangle{s.position.x + window.x, s.position.y + window.y, s.scale.x, s.scale.y}
+                rl.DrawTexturePro(curr_txtr, s.src, dst, s.origin, s.rotation, rl.WHITE) //TODO: Investigate: This draws local sprite...
           		if(show_sprite_icon.active){
         		  rl.DrawRectangleLinesEx(s.rect, 4, rl.BLACK)
           		}
@@ -117,7 +121,7 @@ draw_right_window :: proc(window: Window)
 }
 
 //--------------------------------------------------------------------------------------------------------\\
-// /TopPanel
+// /TopPanel /tp
 //--------------------------------------------------------------------------------------------------------\\
 draw_top_panel :: proc(top_panel : rl.Rectangle, right_window : Window)
 {
@@ -179,7 +183,7 @@ handle_model_loading :: proc()
 {
     if(editor_state == .Pose && !model_loaded)
     {
-        model_viewer = anim.import_model("assets/Full_Model.json")
+        model_viewer = anim.import_model("assets/New Model.json")
         fmt.printfln("Model %s Loaded ScucessfullY", model_viewer.name)
         model_loaded = true
         curr_pose.sprites = make([dynamic]anim.Sprite, len(model_viewer.sprites))

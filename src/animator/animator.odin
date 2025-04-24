@@ -88,7 +88,8 @@ save_model :: proc(anim_model : Model)
         return
     }
     defer delete(data)
-    name := fmt.tprintf("%s/%s.json","assets/",anim_model.name)
+
+    name := fmt.tprintf("%s/%s.json","assets/",ex.s16_to_cstr(anim_model.name))
     os.write_entire_file(name, data)
 }
 
