@@ -191,6 +191,12 @@ handle_model_loading :: proc()
     }
 }
 
+@fini
+shutdown :: proc()
+{
+    free(curr_pose.sprites)
+}
+
 handle_transforms :: proc()
 {
     if(draw_icon_button_tt(&pos_icon, "Translate Sprite") > 0){
