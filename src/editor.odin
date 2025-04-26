@@ -145,7 +145,10 @@ draw_file_menu :: proc()
     draw_icon_button(&stop_icon)
     draw_icon_button_tt(&show_sprite_icon,"Show Box around sprite")
     if(draw_icon_button_tt(&drag_icon,"Select an object") > 0) do pick_sprite_state = .None
-    if(draw_icon_button_tt(&pose_icon,"Save Pose")) > 0 do anim.save_pose(&model_viewer, &curr_pose)
+    if(draw_icon_button_tt(&pose_icon,"Save Pose")) > 0{
+        anim.save_pose(&model_viewer, &curr_pose)
+        pose_icon.active = false
+    }
     handle_transforms()
 
     #partial switch editor_state
@@ -183,18 +186,24 @@ handle_model_loading :: proc()
 {
     if(editor_state == .Pose && !model_loaded)
     {
-        model_viewer = anim.import_model("assets/New Model.json")
-        fmt.printfln("Model %s Loaded ScucessfullY", model_viewer.name)
+        import_success := anim.import_model("assets/New Model.json", &model_viewer)
+        if import_success do fmt.printfln("Model %s Loaded ScucessfullY", model_viewer.name)
         model_loaded = true
         curr_pose.sprites = make([dynamic]anim.Sprite, len(model_viewer.sprites))
         copy(curr_pose.sprites[:], model_viewer.sprites[:])
     }
 }
 
-@fini
 shutdown :: proc()
 {
-    free(curr_pose.sprites)
+    delete(curr_pose.sprites)
+    delete(model_creator.sprites)
+    if(&model_viewer.sprites != nil){delete(model_viewer.sprites)
+        model_viewer.sprites = nil
+    }
+    delete(anim_creator.sprites)
+    delete(anim_viewer.sprites)
+    //free(raw_data(model_viewer.sprites))
 }
 
 handle_transforms :: proc()
@@ -318,14 +327,10 @@ draw_left_panel :: proc(left_panel : rl.Rectangle)
 	if(editing_name){
        	#partial switch editor_state{
     	    case .Model:
-                if(editing_model_name){
-                    edit_name(&model_creator.name,left_panel)
-                }else{
-    			if(len(model_sprites) > 0){
-    			    edit_name(&model_sprites[curr_sprite].name, left_panel)
-    			}}
+                if(editing_model_name) do edit_name(&model_creator.name,left_panel)
+                else if(len(model_sprites) > 0) do edit_name(&model_sprites[curr_sprite].name, left_panel)
     		case .Pose:
-    		    edit_name(&model_name,left_panel)
+                if(editing_model_name)do edit_name(&curr_pose.name,left_panel)
     	}
 	}
 }

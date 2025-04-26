@@ -14,32 +14,14 @@ bot_size := f32(128)
 left_size := f32(196)
 right_size := f32(16)
 top_size := rl.Vector2{32, 32}
+track_alloc: mem.Tracking_Allocator
 
 main :: proc()
 {
     // Memory tracker
-   	track_alloc: mem.Tracking_Allocator
 	mem.tracking_allocator_init(&track_alloc, context.allocator)
 	context.allocator = mem.tracking_allocator(&track_alloc)
-	defer {
-		// At the end of the program, lets print out the results
-		fmt.eprintf("\n")
-		// Memory leaks
-		for _, entry in track_alloc.allocation_map {
-			fmt.eprintf("- %v leaked %v bytes\n", entry.location, entry.size)
-		}
-		// Double free etc.
-		for entry in track_alloc.bad_free_array {
-			fmt.eprintf("- %v bad free\n", entry.location)
-		}
-		mem.tracking_allocator_destroy(&track_alloc)
-		fmt.eprintf("\n")
-
-		// Free the temp_allocator so we don't forget it
-		// The temp_allocator can be used to allocate temporary memory
-		free_all(context.temp_allocator)
-	}
-
+	defer leak_detection()
     //begin scene
     //rl.SetConfigFlags({rl.ConfigFlag.WINDOW_UNDECORATED})
     rl.InitWindow(i32(window_size.x), i32(window_size.y), "TwoD Odin Raylib Animator")
@@ -87,7 +69,23 @@ main :: proc()
 
         rl.EndDrawing()
     }
+    shutdown()
 }
+
+leak_detection :: proc()
+{
+	fmt.eprintf("\n")
+	for _, entry in track_alloc.allocation_map {
+		fmt.eprintf("- %v leaked %v bytes\n", entry.location, entry.size)
+	}
+	for entry in track_alloc.bad_free_array {
+		fmt.eprintf("- %v bad free\n", entry.location)
+	}
+	mem.tracking_allocator_destroy(&track_alloc)
+	fmt.eprintf("\n")
+	free_all(context.temp_allocator)
+}
+
 
 load_recent_texture :: proc(path: string) -> string {
     data, ok := os.read_entire_file(path)

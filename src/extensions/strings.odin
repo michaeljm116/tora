@@ -30,6 +30,14 @@ str_to_s16_c :: proc(from: string) -> (to:string16) {
    return
 }
 
+str16_cmp :: proc(a, b : string16) -> bool{
+    if(a.len != b.len) do return false
+    for i in 0..<a.len{
+       if(a.data[i] != b.data[i]) do return false
+    }
+    return true
+}
+
 str_to_s16_p :: proc(to : ^string16, from:string)
 {
    n := min(len(from),15)

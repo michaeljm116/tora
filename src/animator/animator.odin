@@ -93,21 +93,20 @@ save_model :: proc(anim_model : Model)
     os.write_entire_file(name, data)
 }
 
-import_model :: proc(path: string) -> Model {
+import_model :: proc(path: string, model : ^Model) -> bool {
     data, ok := os.read_entire_file(path)
+    defer delete(data)
     if !ok {
         fmt.eprintln("Error reading file")
-        return Model{}
+        return ok
     }
-    defer delete(data)
 
-    anim_model: Model
-    uerr := json.unmarshal(data, &anim_model)
+    uerr := json.unmarshal(data, model, allocator = context.temp_allocator)
     if uerr != nil {
         fmt.eprintln("Error unmarshaling JSON:", uerr)
-        return Model{}
+        return !ok
     }
-    return anim_model
+    return ok
 }
 
 /*
@@ -134,15 +133,38 @@ and if any of them have changed
 copy the dst to the src
 also name the pose... which would require a text box to enter the name
 */
-save_pose :: proc(model : ^Model, pose : ^Pose){
+save_pose :: proc(model : ^Model, pre_pose : ^Pose){
+
+    // Create an actual pose that only has info of changed sprites
     pose : Pose
+    pose.name = pre_pose.name
     for ps, i in pose.sprites {
         if sprite_changed(model.sprites[i], ps){
            append(&pose.sprites,ps)
         }
     }
-    append(&model.poses, pose)
-    model.has_anim = true
+    defer delete(pose.sprites)
+
+    // If pose already exist in the model, then just edit that pose
+    pose_index := -1
+    if(model.has_anim){
+        for p,i in model.poses{
+            if(ex.str16_cmp(p.name, pose.name)){
+                pose_index = i
+                continue
+            }
+        }
+    }
+
+    if(pose_index == -1){
+        append(&model.poses, pose)
+        model.has_anim = true
+    }
+    else{
+       delete(model.poses[pose_index].sprites)
+       model.poses[pose_index].sprites = make([dynamic]Sprite, len(pose.sprites))
+       copy(pose.sprites[:], model.poses[pose_index].sprites[:])
+    }
 }
 
 /*
